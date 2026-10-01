@@ -1,0 +1,216 @@
+/*
+ * Design tokens. Themes via data-theme on <html> (set before the first render in main.tsx).
+ * Without data-theme the system preference applies (media query fallback below).
+ * Keep the dark values in both dark blocks identical.
+ *
+ * Identity: petrol/turquoise accent, amber as second accent for need/due hints. Success is
+ * a yellowish green and warning a red-leaning orange, so neither can be mistaken for the
+ * accent or the amber. Text colors (accent, amber, success, warning, danger, fg-muted)
+ * reach WCAG AA (4.5:1) on --bg and --surface in both themes; --on-* is the text on fills.
+ */
+
+:root,
+:root[data-theme='light'] {
+  color-scheme: light;
+  --bg: #f3f6f7;
+  --surface: #ffffff;
+  --surface-raised: #ffffff;
+  --surface-sunken: #e8eef0;
+  --border: rgba(10, 30, 40, 0.09);
+  --border-strong: rgba(10, 30, 40, 0.16);
+  --fg: #0e161b;
+  --fg-secondary: #4d5b65;
+  --fg-muted: #5f6d77;
+  --overlay: rgba(8, 22, 28, 0.3);
+
+  --accent: #0b7285;
+  --accent-strong: #095e6e;
+  --accent-soft: rgba(11, 114, 133, 0.12);
+  --accent-glow: rgba(11, 114, 133, 0.35);
+  --on-accent: #ffffff;
+  --amber: #e09a0b;
+  --amber-fg: #8a5b00;
+  --amber-soft: rgba(224, 154, 11, 0.16);
+  --amber-glow: rgba(224, 154, 11, 0.4);
+  --success: #15803d;
+  --success-soft: rgba(21, 128, 61, 0.12);
+  --success-glow: rgba(21, 128, 61, 0.35);
+  --on-success: #ffffff;
+  --danger: #be123c;
+  --danger-soft: rgba(190, 18, 60, 0.1);
+  --danger-glow: rgba(190, 18, 60, 0.32);
+  --on-danger: #ffffff;
+  --warning: #c2410c;
+  --warning-soft: rgba(194, 65, 12, 0.11);
+  --warning-glow: rgba(194, 65, 12, 0.32);
+  --on-warning: #ffffff;
+
+  --shadow-color: rgba(8, 22, 28, 0.12);
+  --highlight: transparent;
+  --shimmer: rgba(255, 255, 255, 0.55);
+  --bg-shape-opacity: 0.1;
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --bg: #0a1014;
+  --surface: #10181d;
+  --surface-raised: #152027;
+  --surface-sunken: #0c1418;
+  --border: rgba(255, 255, 255, 0.07);
+  --border-strong: rgba(255, 255, 255, 0.13);
+  --fg: #e6eef1;
+  --fg-secondary: #9aa8b2;
+  --fg-muted: #7f8d97;
+  --overlay: rgba(0, 0, 0, 0.5);
+
+  --accent: #3cc4cf;
+  --accent-strong: #62d3dc;
+  --accent-soft: rgba(60, 196, 207, 0.14);
+  --accent-glow: rgba(60, 196, 207, 0.4);
+  --on-accent: #04191c;
+  --amber: #f5b326;
+  --amber-fg: #f5b326;
+  --amber-soft: rgba(245, 179, 38, 0.15);
+  --amber-glow: rgba(245, 179, 38, 0.4);
+  --success: #4ade80;
+  --success-soft: rgba(74, 222, 128, 0.14);
+  --success-glow: rgba(74, 222, 128, 0.35);
+  --on-success: #052e16;
+  --danger: #fb7185;
+  --danger-soft: rgba(251, 113, 133, 0.14);
+  --danger-glow: rgba(251, 113, 133, 0.35);
+  --on-danger: #2a0610;
+  --warning: #fb923c;
+  --warning-soft: rgba(251, 146, 60, 0.14);
+  --warning-glow: rgba(251, 146, 60, 0.35);
+  --on-warning: #2a1103;
+
+  --shadow-color: rgba(0, 0, 0, 0.45);
+  --highlight: rgba(255, 255, 255, 0.05);
+  --shimmer: rgba(255, 255, 255, 0.06);
+  --bg-shape-opacity: 0.14;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    color-scheme: dark;
+    --bg: #0a1014;
+    --surface: #10181d;
+    --surface-raised: #152027;
+    --surface-sunken: #0c1418;
+    --border: rgba(255, 255, 255, 0.07);
+    --border-strong: rgba(255, 255, 255, 0.13);
+    --fg: #e6eef1;
+    --fg-secondary: #9aa8b2;
+    --fg-muted: #7f8d97;
+    --overlay: rgba(0, 0, 0, 0.5);
+
+    --accent: #3cc4cf;
+    --accent-strong: #62d3dc;
+    --accent-soft: rgba(60, 196, 207, 0.14);
+    --accent-glow: rgba(60, 196, 207, 0.4);
+    --on-accent: #04191c;
+    --amber: #f5b326;
+    --amber-fg: #f5b326;
+    --amber-soft: rgba(245, 179, 38, 0.15);
+    --amber-glow: rgba(245, 179, 38, 0.4);
+    --success: #4ade80;
+    --success-soft: rgba(74, 222, 128, 0.14);
+    --success-glow: rgba(74, 222, 128, 0.35);
+    --on-success: #052e16;
+    --danger: #fb7185;
+    --danger-soft: rgba(251, 113, 133, 0.14);
+    --danger-glow: rgba(251, 113, 133, 0.35);
+    --on-danger: #2a0610;
+    --warning: #fb923c;
+    --warning-soft: rgba(251, 146, 60, 0.14);
+    --warning-glow: rgba(251, 146, 60, 0.35);
+    --on-warning: #2a1103;
+
+    --shadow-color: rgba(0, 0, 0, 0.45);
+    --highlight: rgba(255, 255, 255, 0.05);
+    --shimmer: rgba(255, 255, 255, 0.06);
+    --bg-shape-opacity: 0.14;
+  }
+}
+
+/* Petrol tones of the app icon (illustrations, background shapes). */
+:root {
+  --petrol-deep: #0a3139;
+  --petrol: #13525c;
+  --petrol-light: #22b4bc;
+}
+
+@custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
+  --color-surface-sunken: var(--surface-sunken);
+  --color-line: var(--border);
+  --color-line-strong: var(--border-strong);
+  --color-fg: var(--fg);
+  --color-fg-secondary: var(--fg-secondary);
+  --color-fg-muted: var(--fg-muted);
+  --color-overlay: var(--overlay);
+  --color-accent: var(--accent);
+  --color-accent-strong: var(--accent-strong);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-glow: var(--accent-glow);
+  --color-on-accent: var(--on-accent);
+  --color-amber: var(--amber);
+  --color-amber-fg: var(--amber-fg);
+  --color-amber-soft: var(--amber-soft);
+  --color-amber-glow: var(--amber-glow);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-success-glow: var(--success-glow);
+  --color-on-success: var(--on-success);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-danger-glow: var(--danger-glow);
+  --color-on-danger: var(--on-danger);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-warning-glow: var(--warning-glow);
+  --color-on-warning: var(--on-warning);
+  --color-petrol-deep: var(--petrol-deep);
+  --color-petrol: var(--petrol);
+  --color-petrol-light: var(--petrol-light);
+
+  --shadow-soft: 0 1px 2px var(--shadow-color), inset 0 1px 0 var(--highlight);
+  --shadow-card: 0 10px 30px -14px var(--shadow-color), inset 0 1px 0 var(--highlight);
+  --shadow-float: 0 24px 60px -20px var(--shadow-color), inset 0 1px 0 var(--highlight);
+}
+
+@theme {
+  --font-sans: 'Inter Variable', system-ui, sans-serif;
+
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+
+  --text-xs: 12px;
+  --text-xs--line-height: 16px;
+  --text-sm: 14px;
+  --text-sm--line-height: 20px;
+  --text-base: 16px;
+  --text-base--line-height: 24px;
+  --text-lg: 18px;
+  --text-lg--line-height: 26px;
+  --text-xl: 22px;
+  --text-xl--line-height: 28px;
+  --text-2xl: 28px;
+  --text-2xl--line-height: 34px;
+  --text-3xl: 36px;
+  --text-3xl--line-height: 42px;
+  --text-4xl: 48px;
+  --text-4xl--line-height: 54px;
+
+  --breakpoint-wide: 900px;
+
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+}

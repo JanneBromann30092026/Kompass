@@ -104,7 +104,7 @@ Touch-first (iPad), wie Synapse:
 
 ## Roadmap
 - [x] 0 Projektkontext (CLAUDE.md)
-- [ ] 1 Fundament: Setup, PWA, Deployment, Design-System & Shell (aus Synapse)
+- [x] 1 Fundament: Setup, PWA, Deployment, Design-System & Shell (aus Synapse)
 - [ ] 2 Datenbank, Datenmodell & Verschlüsselung
 - [ ] 3 Fachwissen & Demo-Daten
 - [ ] 4 Kundenverwaltung
@@ -134,3 +134,12 @@ Touch-first (iPad), wie Synapse:
   - Navigation: ab 900 px Sidebar (einklappbar), darunter Tab-Bar unten.
   - Teilen: Datei schon beim Öffnen des Dialogs erzeugen, damit `navigator.share({files})` direkt im Tipp läuft (iPadOS verlangt eine frische Nutzergeste); ohne Teilen-API Download per Blob-Link.
   - Tests: Touch-Gesten per CDP (`Input.dispatchTouchEvent`), KI immer per `page.route` mocken (inkl. OPTIONS-Preflight), Bildschirmtastatur in Screenshots per gefälschtem `visualViewport` simulieren.
+- Schritt 1 (Fundament):
+  - Aus Synapse übernommen und angepasst: Projekt-Setup (gleiche Paketversionen, Lockfile aus Synapse beschnitten), vite.config (cspPlugin, splashPlugin, noStyleInjectPlugin, PWA, Chunking), ESLint/Prettier/TS, Workflows, Playwright mit iPad-Profilen, Screenshot- und Icon-Skript, Tokens, UI-Komponenten inkl. Hooks, Theme-Boot, UpdatePrompt, ErrorBoundary, Shell, Tastaturkürzel-Übersicht (`?`). Weggelassen: Karteikarten-Teile, Fehlerprotokoll, Onboarding (kommt mit dem Passwort in Schritt 2), ⌘K-Hinweis, ColorPicker/IconPicker/ProjectAvatar.
+  - Datenbank: Dexie-DB `kompass`, Version 1 nur mit Tabelle `settings` (Theme, Bewegung, Seitenleiste, Entwicklermodus). Bewusst unverschlüsselt: technische Werte ohne Personenbezug, die schon vor dem Entsperren gebraucht werden. Schritt 2 ergänzt die verschlüsselten Tabellen als **Version 2**. localStorage-Spiegel: `kompass.bootPrefs`. Eigene Namen sind Pflicht, weil Synapse auf demselben Origin (jannebromann30092026.github.io) läuft.
+  - CSP: `connect-src 'self'`; `https://api.anthropic.com` kommt erst mit der KI in Schritt 10 dazu.
+  - Farben (alle Textfarben ≥ 4,5:1 auf --bg/--surface): Akzent hell `#0b7285` (weiße Schrift), dunkel `#3cc4cf` mit dunkler Schrift (`--on-accent`). Bernstein: `--amber` für Flächen/Punkte, `--amber-fg` für Text. Erfolg ist gelbgrün (`#15803d`/`#4ade80`), Warnung rot-orange (`#c2410c`/`#fb923c`) – so bleiben Akzent, Bernstein und Status klar getrennt. Gefüllte Status-Buttons nutzen `--on-success`/`--on-danger`/`--on-warning`. Badge-Ton `amber` für Bedarf/Fälligkeit.
+  - Icon: Quelle `public/icons/favicon.svg` (Kompassrose, Nadel Türkis/Bernstein). `npm run icons` erzeugt pwa-192/512 mit transparenten Ecken sowie apple-touch-icon und maskable als randlose Variante (ohne `rx`), weil iOS/Android selbst maskieren; dazu iOS-Startbilder hell/dunkel.
+  - Fokusmodus: Seiten fordern ihn mit `useFocusModeRequest(active)` an (Zähler-Store in src/app/shell/focusMode.ts); beim Verlassen der Seite endet er automatisch. Test in /dev/ui.
+  - Platzhalterseiten liegen in src/features/coming-soon und werden in den jeweiligen Schritten durch echte Seiten ersetzt. Routen: /dashboard, /customers, /reminders, /campaigns, /network, /settings, /dev/ui.
+  - Split View (500 px): Tab-Beschriftungen kürzen sich mit „…“ statt überzulaufen. `npm run screenshots` erzeugt zusätzlich `icon-preview.png` und `*-split-dark.png`.
