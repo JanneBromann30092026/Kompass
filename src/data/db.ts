@@ -1,11 +1,41 @@
 import { Dexie, type EntityTable } from 'dexie';
-import type { Setting } from './types';
+import type {
+  EncryptedRow,
+  ErrorLogRow,
+  MetaEntry,
+  SecretRow,
+  Setting,
+  SnapshotRow,
+} from './types';
 
 /** Own name: Synapse runs on the same origin (GitHub Pages) and uses "synapse". */
 export const DB_NAME = 'kompass';
 
+/** Tables with customer data (decrypted into the in-memory store after unlocking). */
+export const DATA_TABLES = [
+  'customers',
+  'needs',
+  'reminders',
+  'lifeEvents',
+  'conversations',
+  'campaigns',
+  'history',
+] as const;
+export type DataTable = (typeof DATA_TABLES)[number];
+
 export class KompassDb extends Dexie {
   settings!: EntityTable<Setting, 'key'>;
+  meta!: EntityTable<MetaEntry, 'key'>;
+  customers!: EntityTable<EncryptedRow, 'id'>;
+  needs!: EntityTable<EncryptedRow, 'id'>;
+  reminders!: EntityTable<EncryptedRow, 'id'>;
+  lifeEvents!: EntityTable<EncryptedRow, 'id'>;
+  conversations!: EntityTable<EncryptedRow, 'id'>;
+  campaigns!: EntityTable<EncryptedRow, 'id'>;
+  history!: EntityTable<EncryptedRow, 'id'>;
+  secrets!: EntityTable<SecretRow, 'key'>;
+  snapshots!: EntityTable<SnapshotRow, 'id'>;
+  errorLog!: EntityTable<ErrorLogRow, 'id'>;
 
   constructor(name = DB_NAME) {
     super(name);
@@ -14,12 +44,29 @@ export class KompassDb extends Dexie {
      * Migrations: never change an existing version. Every schema change is a new
      * `this.version(n + 1).stores({...changed tables only}).upgrade(tx => ...)`.
      * Only indexed fields are listed; all other fields are stored anyway.
+     * Personal data only ever lives in the encrypted `payload` of a row; readable are
+     * only technical fields (ids, foreign keys, timestamps).
      */
 
     // Step 1: technical settings only (theme, motion, developer mode). Unencrypted on
     // purpose: they contain no personal data and are needed before the app is unlocked.
     this.version(1).stores({
       settings: 'key',
+    });
+
+    // Step 2: vault parameters and the encrypted tables (new tables, nothing to migrate).
+    this.version(2).stores({
+      meta: 'key',
+      customers: 'id, updatedAt',
+      needs: 'id, customerId, updatedAt',
+      reminders: 'id, customerId, updatedAt',
+      lifeEvents: 'id, customerId, updatedAt',
+      conversations: 'id, customerId, updatedAt',
+      campaigns: 'id, updatedAt',
+      history: 'id, customerId, updatedAt',
+      secrets: 'key',
+      snapshots: 'id, createdAt',
+      errorLog: 'id, at',
     });
   }
 }
