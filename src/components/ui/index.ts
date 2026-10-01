@@ -11,6 +11,7 @@ export { useLongPress } from './hooks/useLongPress';
 export { IconButton } from './IconButton';
 export { Input } from './Input';
 export { Modal } from './Modal';
+export { PasswordInput } from './PasswordInput';
 export { ProgressBar } from './ProgressBar';
 export { ProgressRing } from './ProgressRing';
 export { Select, type SelectOption } from './Select';

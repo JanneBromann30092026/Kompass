@@ -105,7 +105,7 @@ Touch-first (iPad), wie Synapse:
 ## Roadmap
 - [x] 0 Projektkontext (CLAUDE.md)
 - [x] 1 Fundament: Setup, PWA, Deployment, Design-System & Shell (aus Synapse)
-- [ ] 2 Datenbank, Datenmodell & Verschlüsselung
+- [x] 2 Datenbank, Datenmodell & Verschlüsselung
 - [ ] 3 Fachwissen & Demo-Daten
 - [ ] 4 Kundenverwaltung
 - [ ] 5 Bedarfs-Engine & Gesprächsaufhänger
@@ -143,3 +143,18 @@ Touch-first (iPad), wie Synapse:
   - Fokusmodus: Seiten fordern ihn mit `useFocusModeRequest(active)` an (Zähler-Store in src/app/shell/focusMode.ts); beim Verlassen der Seite endet er automatisch. Test in /dev/ui.
   - Platzhalterseiten liegen in src/features/coming-soon und werden in den jeweiligen Schritten durch echte Seiten ersetzt. Routen: /dashboard, /customers, /reminders, /campaigns, /network, /settings, /dev/ui.
   - Split View (500 px): Tab-Beschriftungen kürzen sich mit „…“ statt überzulaufen. `npm run screenshots` erzeugt zusätzlich `icon-preview.png` und `*-split-dark.png`.
+- Schritt 2 (Datenbank, Datenmodell & Verschlüsselung):
+  - Dexie **Version 2** (nicht 1 wie im Prompt), weil Version 1 (nur `settings`) seit Schritt 1 ausgeliefert ist: neue Tabellen meta, customers, needs, reminders, lifeEvents, conversations, campaigns, history, secrets, snapshots, errorLog; keine Datenmigration nötig (Upgrade-Test vorhanden). Lesbar sind nur id/key, customerId, updatedAt (bzw. createdAt/at); alles andere steckt in `payload`. Auch errorLog ist verschlüsselt (Fehlermeldungen können Personendaten enthalten); Nutzung folgt später.
+  - Krypto: PBKDF2-SHA-256 mit **800.000 Iterationen** (gemessen im Cloud-Chromium, Xeon 2,1 GHz: 600k ≈ 105 ms, 800k ≈ 140 ms, 1 Mio. ≈ 175 ms). Mindestwert 600.000 wird beim Lesen geprüft. Iterationen stehen je Tresor in meta; eine Passwortänderung übernimmt den aktuellen Standard. Im Entwicklermodus zeigt Einstellungen → Sicherheit die gemessene Ableitungsdauer auf dem iPad.
+  - Format `{v: 1, iv (12 Byte), ct}` als Uint8Array direkt in IndexedDB. AAD `kompass:v1:<tabelle>:<id>` bindet jede Payload an ihren Datensatz (vertauschte Payloads lassen sich nicht entschlüsseln). Passwörter werden NFC-normalisiert. Prüfwert = verschlüsselter fester Text in meta.vault.
+  - Der Schlüssel liegt nur in src/services/crypto/session.ts (Modulvariable, nicht extrahierbar), nie in einem Store. Sperren löscht Schlüssel und den entschlüsselten Store (src/data/store.ts).
+  - Schreiben: erst verschlüsseln, dann eine Dexie-Transaktion (Web Crypto darf nicht in IDB-Transaktionen laufen). Passwort ändern: alle Zeilen außerhalb neu verschlüsseln, dann in **einer** Transaktion prüfen (IV unverändert = niemand hat dazwischen geschrieben) und schreiben; bei Konflikt bis zu 3 Versuche.
+  - Kundennummer: Zähler meta.customerSequence wird in einer eigenen kleinen Transaktion vor dem Verschlüsseln reserviert – die Nummer ist auch nach Fehlern oder Löschen verbraucht.
+  - Sync zwischen Tabs: liveQuery liest nur id + updatedAt; entschlüsselt werden nur neuere Versionen, und als gelöscht gilt nur, was in einem früheren Ergebnis existierte (sonst löscht ein veraltetes Ergebnis frisch geschriebene Datensätze aus dem Store – Race im Test gefunden). updatedAt steigt je Datensatz strikt (`nextTimestamp`). Scheitert das Entschlüsseln im Sync (Passwort in anderem Tab geändert), sperrt die App.
+  - Verlauf: Tabelle history (verschlüsselt), Einträge mit `path`, `from`, `to` (verschachtelt, z. B. `contracts.bu`). Kunde löschen löscht alles inkl. Verlauf (Recht auf Löschung).
+  - Domain-Schlüssel (Sparten, Vertragsstatus, Phasen, Ereignisse …) englisch in src/data/domain.ts; deutsche Bezeichnungen und Regeln folgen in Schritt 3. Wohnsituation/Familienstand/Risikoprofil als Aufzählungen statt Freitext (Kundenvorlage hatte Varianten wie „Miete (mit Partner …)“).
+  - Sperrbildschirm: echtes `<form>`, verstecktes Benutzerfeld „Kompass“ (sr-only, readonly), `autocomplete` new-password/current-password → Schlüsselbund + Face ID. Fehlversuche in meta.unlockFailures (überleben Neuladen): ab dem 3. Fehlversuch 5/10/30/60 s Wartezeit. „Passwort vergessen?“ löscht nach Eingabe von „LÖSCHEN“ alles. Beim Entsperren dreht sich die Nadel ein; das Passwortfeld verliert den Fokus (Tastatur schließt, keine Eingabe landet im unsichtbaren Feld).
+  - VaultGate ohne `AnimatePresence mode="wait"`: Der deckende Sperrbildschirm erscheint sofort, die App blendet darunter aus.
+  - Auto-Sperre (src/app/lock/useAutoLock.ts): Inaktivität (Einstellung 1–30 Min., Standard 5) per 5-s-Intervall, Hintergrund > 1 Min. per visibilitychange (iPadOS pausiert Timer im Hintergrund).
+  - Tests: Playwrights `page.clock` war hier unzuverlässig (fastForward wirkte manchmal nicht, motion-Animationen blieben danach hängen) → eigene Zeitverschiebung nur für `Date.now()` per addInitScript; das Prüfintervall läuft in Echtzeit.
+  - Testpasswort `Kompass-Test-2026!` (src/core/devConstants.ts = e2e/ipad.ts), im Entwicklermodus auf dem Sperrbildschirm und in den Einstellungen sichtbar. Entwicklerbereich „Verschlüsselung testen“: Testkunden anlegen/ändern/löschen, Ciphertext-Vorschau.
