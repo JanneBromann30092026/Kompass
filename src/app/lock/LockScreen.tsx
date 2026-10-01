@@ -81,7 +81,10 @@ function SetupForm({ onError }: { onError: () => void }) {
           name="new-password"
           autoComplete="new-password"
           value={password}
-          onChange={(event) => setPassword(event.target.value)}
+          onChange={(event) => {
+            setPassword(event.target.value);
+            setError(undefined);
+          }}
           hint={error?.field === 'password' ? undefined : t.passwordHint(MIN_PASSWORD_LENGTH)}
           error={error?.field === 'password' ? error.text : undefined}
           data-testid="setup-password"
@@ -93,7 +96,10 @@ function SetupForm({ onError }: { onError: () => void }) {
         name="new-password-repeat"
         autoComplete="new-password"
         value={repeat}
-        onChange={(event) => setRepeat(event.target.value)}
+        onChange={(event) => {
+          setRepeat(event.target.value);
+          setError(undefined);
+        }}
         error={error?.field === 'repeat' ? error.text : undefined}
         data-testid="setup-repeat"
       />
@@ -105,7 +111,14 @@ function SetupForm({ onError }: { onError: () => void }) {
         </div>
       </div>
       <div className="flex flex-col gap-1">
-        <Toggle label={t.acknowledge} checked={acknowledged} onChange={setAcknowledged} />
+        <Toggle
+          label={t.acknowledge}
+          checked={acknowledged}
+          onChange={(value) => {
+            setAcknowledged(value);
+            setError(undefined);
+          }}
+        />
         {error?.field === 'ack' && (
           <p role="alert" className="px-1 text-sm text-danger">
             {error.text}

@@ -96,6 +96,20 @@ async function open(key: CryptoKey): Promise<void> {
   useVault.setState({ status: 'opening', lockReason: null });
 }
 
+/** Opens the vault; if loading fails, nothing stays decrypted and the app is locked. */
+async function openOrLock(key: CryptoKey, hasVault: boolean): Promise<void> {
+  try {
+    await open(key);
+  } catch (error: unknown) {
+    stopSync?.();
+    stopSync = null;
+    clearSessionKey();
+    dataStore.clear();
+    useVault.setState({ status: 'locked', hasVault });
+    throw error;
+  }
+}
+
 async function newVaultMeta(password: string): Promise<{ key: CryptoKey; meta: VaultMeta }> {
   const salt = randomBytes(SALT_BYTES);
   const key = await timedDerive(password, salt, PBKDF2_ITERATIONS);
@@ -133,14 +147,17 @@ export const vault = {
   async setup(password: string): Promise<void> {
     if (Array.from(password).length < MIN_PASSWORD_LENGTH) throw new WeakPasswordError();
     useVault.setState({ status: 'verifying' });
+    let key: CryptoKey;
     try {
-      const { key, meta } = await newVaultMeta(password);
-      await metaRepo.createVault(meta, __APP_VERSION__);
-      await open(key);
+      const created = await newVaultMeta(password);
+      await metaRepo.createVault(created.meta, __APP_VERSION__);
+      key = created.key;
     } catch (error: unknown) {
       useVault.setState({ status: 'setup' });
       throw error;
     }
+    // The vault exists from here on: a failure while opening leaves it locked.
+    await openOrLock(key, true);
   },
 
   async unlock(password: string): Promise<UnlockResult> {
@@ -156,15 +173,21 @@ export const vault = {
       return { ok: false, reason: 'wrongPassword', waitMs: 0 };
     }
     useVault.setState({ status: 'verifying' });
-    const key = await timedDerive(password, meta.kdf.salt, meta.kdf.iterations);
-    if (!(await checkKey(key, meta))) {
-      const next = await metaRepo.recordUnlockFailure(Date.now());
-      useVault.setState({ status: 'locked', failures: next });
-      return { ok: false, reason: 'wrongPassword', waitMs: unlockDelayMs(next.count) };
+    let key: CryptoKey;
+    try {
+      key = await timedDerive(password, meta.kdf.salt, meta.kdf.iterations);
+      if (!(await checkKey(key, meta))) {
+        const next = await metaRepo.recordUnlockFailure(Date.now());
+        useVault.setState({ status: 'locked', failures: next });
+        return { ok: false, reason: 'wrongPassword', waitMs: unlockDelayMs(next.count) };
+      }
+      await metaRepo.clearUnlockFailures();
+    } catch (error: unknown) {
+      useVault.setState({ status: 'locked' });
+      throw error;
     }
-    await metaRepo.clearUnlockFailures();
     useVault.setState({ failures: null });
-    await open(key);
+    await openOrLock(key, true);
     return { ok: true };
   },
 
