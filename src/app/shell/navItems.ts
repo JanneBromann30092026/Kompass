@@ -1,4 +1,5 @@
 import {
+  BookOpen,
   CalendarClock,
   House,
   Megaphone,
@@ -28,3 +29,6 @@ export function navItems(devMode: boolean): NavItem[] {
   if (devMode) items.push({ to: '/dev/ui', label: de.nav.dev, icon: Wrench });
   return items;
 }
+
+/** Reference knowledge: below the main navigation (sidebar) or in the settings (tab bar). */
+export const knowledgeItem: NavItem = { to: '/knowledge', label: de.nav.knowledge, icon: BookOpen };

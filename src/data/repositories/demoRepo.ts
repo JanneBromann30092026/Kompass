@@ -4,6 +4,7 @@
  */
 import { formatCustomerNumber } from '@/core/customerNumber';
 import { localIsoDate } from '@/core/dates';
+import { DATA_TABLES } from '../db';
 import { buildDemoCustomer, demoCustomerId, type DemoBuild } from '../demo/buildDemo';
 import { DEMO_CUSTOMERS } from '../demo/demoCustomers';
 import { buildSyntheticCustomers, SYNTHETIC_TAG } from '../demo/synthetic';
@@ -12,7 +13,7 @@ import { useDataStore } from '../store';
 import { customersRepo } from './customersRepo';
 import { metaRepo } from './metaRepo';
 import { validateRecord } from './recordsRepo';
-import { commit, type PendingWrite } from './rows';
+import { commit, loadAllData, type PendingWrite } from './rows';
 
 /** Customers per transaction when importing many at once. */
 const BATCH = 50;
@@ -113,5 +114,15 @@ export const demoRepo = {
       .map((c) => c.id);
     await customersRepo.removeMany(ids);
     return ids.length;
+  },
+
+  /** Decrypts all data again (like unlocking) and measures how long it takes. */
+  async measureDecrypt(): Promise<{ rows: number; ms: number }> {
+    const started = performance.now();
+    await loadAllData();
+    const ms = Math.round(performance.now() - started);
+    const state = useDataStore.getState();
+    const rows = DATA_TABLES.reduce((sum, table) => sum + Object.keys(state[table]).length, 0);
+    return { rows, ms };
   },
 };

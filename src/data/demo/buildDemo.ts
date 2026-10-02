@@ -59,7 +59,11 @@ function timestamp(day: string, minuteOfDay: number, now: string): string {
   return new Date(Math.min(base, Date.parse(now) - 60_000)).toISOString();
 }
 
-function shiftCustomer(input: DemoCustomer['customer'], days: number): CustomerInput {
+function shiftCustomer(
+  input: DemoCustomer['customer'],
+  days: number,
+  years: number,
+): CustomerInput {
   const consent = <T extends { date: string }>(value: T | undefined) =>
     value ? { ...value, date: addDays(value.date, days) } : undefined;
   const shifted: CustomerInput = {
@@ -67,8 +71,8 @@ function shiftCustomer(input: DemoCustomer['customer'], days: number): CustomerI
     demo: true,
     occupation: input.occupation ? shiftTextDates(input.occupation, days) : undefined,
     birthDate: input.birthDate ? addDays(input.birthDate, days) : undefined,
-    // Only the year known: move by whole years so the age range stays the same.
-    birthYear: input.birthYear ? input.birthYear + Math.round(days / 365.25) : undefined,
+    // Only the year known: move by calendar years so "this year minus birth year" stays.
+    birthYear: input.birthYear ? input.birthYear + years : undefined,
     trainingStart: input.trainingStart ? shiftYearMonth(input.trainingStart, days) : undefined,
     trainingEnd: input.trainingEnd ? shiftYearMonth(input.trainingEnd, days) : undefined,
     consents: {
@@ -159,7 +163,11 @@ export function buildDemoCustomer(source: DemoCustomer, options: BuildOptions): 
   const updatedAt = changes.at(-1)?.at ?? createdAt;
 
   const customer = {
-    ...shiftCustomer(source.customer, days),
+    ...shiftCustomer(
+      source.customer,
+      days,
+      Number(today.slice(0, 4)) - Number(DEMO_REFERENCE_DATE.slice(0, 4)),
+    ),
     id,
     number: options.number,
     createdAt,

@@ -30,7 +30,7 @@ const historyOf = (customerId: string) =>
 
 describe('customersRepo', () => {
   it('assigns sequential numbers that are never reused', async () => {
-    const a = await customersRepo.create({ firstName: 'Ala' });
+    const a = await customersRepo.create({ firstName: 'Anna' });
     const b = await customersRepo.create({ firstName: 'Ben' });
     expect([a.number, b.number]).toEqual(['K-0001', 'K-0002']);
     await customersRepo.remove(b.id);

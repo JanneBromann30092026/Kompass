@@ -210,7 +210,8 @@
   --text-4xl: 48px;
   --text-4xl--line-height: 54px;
 
-  --breakpoint-wide: 900px;
+  /* rem like the default breakpoints, so "wide:" sorts after "sm:" (900 px). */
+  --breakpoint-wide: 56.25rem;
 
   --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
 }

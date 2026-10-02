@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from 'react';
 import { motion } from 'motion/react';
-import { Check, Keyboard, Trash2 } from 'lucide-react';
+import { useNavigate } from 'react-router';
+import { BookOpen, Check, Keyboard, Trash2 } from 'lucide-react';
 import { Button, ConfirmDialog, SegmentedControl, Surface, Toggle } from '@/components/ui';
 import { E2E_TEST_PASSWORD } from '@/core/devConstants';
 import { useShortcutsHelp } from '@/app/shortcuts/shortcutsStore';
@@ -57,10 +58,31 @@ export function SettingsPage() {
   const devMode = useSettings((s) => s.devMode);
   const set = useSettings((s) => s.set);
   const [resetting, setResetting] = useState(false);
+  const navigate = useNavigate();
 
   return (
     <Page title={t.title} width="narrow" actions={<SavedIndicator />}>
       <div className="flex flex-col gap-8">
+        <Section title={de.knowledge.settingsTitle} testId="settings-knowledge">
+          <div className="flex flex-wrap items-center gap-4">
+            <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-accent-soft text-accent">
+              <BookOpen size={20} aria-hidden />
+            </span>
+            <span className="flex min-w-0 flex-1 flex-col">
+              <span className="text-base font-medium text-fg">{de.knowledge.title}</span>
+              <span className="text-sm text-fg-muted">{de.knowledge.settingsText}</span>
+            </span>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => void navigate('/knowledge')}
+              data-testid="open-knowledge"
+            >
+              {de.knowledge.open}
+            </Button>
+          </div>
+        </Section>
+
         <Section title={t.appearance} testId="settings-appearance">
           <div className="flex flex-col gap-4">
             <div className="flex flex-wrap items-center justify-between gap-3">

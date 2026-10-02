@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { TEST_PASSWORD } from './ipad.ts';
-import { enableDevMode, nav, openApp, setupVault, unlock } from './vault.ts';
+import { enableDevMode, nav, openApp, setupVault, storageDump, unlock } from './vault.ts';
 
 const lockScreen = (page: Page) => page.getByTestId('lock-screen');
 
@@ -164,27 +164,7 @@ test('IndexedDB and localStorage contain no plaintext', async ({ page }) => {
   await expect(section.getByTestId('vault-customers')).toContainText('Lena');
   await expect(section.getByTestId('vault-raw')).toBeVisible();
 
-  const dump = await page.evaluate(async () => {
-    const db = await new Promise<IDBDatabase>((resolve, reject) => {
-      const request = indexedDB.open('kompass');
-      request.onsuccess = () => resolve(request.result);
-      request.onerror = () => reject(request.error ?? new Error('open failed'));
-    });
-    const parts: string[] = [];
-    for (const name of Array.from(db.objectStoreNames)) {
-      const rows = await new Promise<unknown[]>((resolve) => {
-        const request = db.transaction(name).objectStore(name).getAll();
-        request.onsuccess = () => resolve(request.result as unknown[]);
-      });
-      parts.push(
-        JSON.stringify(rows, (_key, value: unknown) =>
-          value instanceof Uint8Array ? new TextDecoder('latin1').decode(value) : value,
-        ),
-      );
-    }
-    db.close();
-    return { indexedDb: parts.join('\n'), localStorage: JSON.stringify({ ...localStorage }) };
-  });
+  const dump = await storageDump(page);
   for (const plaintext of ['Lena', 'Azubi Bankkauffrau', 'testdaten', 'K-0001']) {
     expect(dump.indexedDb).not.toContain(plaintext);
     expect(dump.localStorage).not.toContain(plaintext);

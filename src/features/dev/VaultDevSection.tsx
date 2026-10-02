@@ -12,7 +12,15 @@ function pick<T>(list: readonly T[], index: number): T {
   return list[index % list.length] as T;
 }
 
-function Stat({ label, value, testId }: { label: string; value: string | number; testId: string }) {
+export function Stat({
+  label,
+  value,
+  testId,
+}: {
+  label: string;
+  value: string | number;
+  testId: string;
+}) {
   return (
     <div className="flex flex-col gap-0.5 rounded-lg bg-surface-sunken px-4 py-3">
       <span className="text-sm text-fg-secondary">{label}</span>

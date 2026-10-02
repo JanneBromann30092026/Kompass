@@ -17,6 +17,8 @@ interface Shot {
   scroll?: boolean;
   /** Only in the wide layout (sidebar). */
   wideOnly?: boolean;
+  /** Also in Split View (otherwise only the first six shots). */
+  split?: boolean;
 }
 
 /** Unlocks after a reload (every reload locks the app). */
@@ -177,6 +179,21 @@ async function devVault(page: Page) {
   await page.waitForTimeout(3200); // let the toasts disappear
 }
 
+async function devDemo(page: Page) {
+  const section = page.getByTestId('dev-section-demo');
+  await section.getByRole('button', { name: 'Demo-Daten laden' }).click();
+  await section
+    .getByTestId('demo-count')
+    .filter({ hasText: /^1[2-9]$/ })
+    .waitFor();
+  await page.waitForTimeout(3200); // let the toast disappear
+}
+
+async function knowledgeSearch(page: Page) {
+  await page.getByTestId('knowledge-search').fill('nachvers');
+  await page.getByTestId('knowledge-result').first().waitFor();
+}
+
 async function enableDevMode(page: Page) {
   await page.goto(`${PREVIEW_URL}#/settings`);
   const toggle = page.getByRole('switch', { name: 'Entwicklermodus' });
@@ -222,10 +239,19 @@ const SHOTS: Shot[] = [
   { route: '/settings', name: 'settings-password', prepare: changePassword },
   { route: '/dev/ui', name: 'dev-ui', prepare: enableDevMode, scroll: true },
   { route: '/dev/ui', name: 'dev-vault', prepare: devVault },
+  { route: '/dev/ui', name: 'dev-demo', prepare: devDemo },
   { route: '/dev/ui', name: 'dev-modal', prepare: click('Modal öffnen') },
   { route: '/dev/ui', name: 'dev-sheet', prepare: click('Bottom Sheet öffnen') },
   { route: '/dev/ui', name: 'dev-focus', prepare: focusMode },
   { route: '/dashboard', name: 'shortcuts', prepare: shortcuts },
+  { route: '/knowledge', name: 'knowledge', scroll: true, split: true },
+  { route: '/knowledge', name: 'knowledge-search', prepare: knowledgeSearch },
+  { route: '/knowledge/product/bu', name: 'knowledge-product', scroll: true, split: true },
+  { route: '/knowledge/phase/training', name: 'knowledge-phase', scroll: true },
+  { route: '/knowledge/event/trainingEnd', name: 'knowledge-event', scroll: true },
+  { route: '/knowledge/topic/wealthBuilding', name: 'knowledge-topic' },
+  { route: '/knowledge/priorities', name: 'knowledge-priorities', scroll: true },
+  { route: '/knowledge/questionnaire', name: 'knowledge-questionnaire', scroll: true },
   { route: '/customers', name: 'sidebar-collapsed', prepare: collapsedSidebar, wideOnly: true },
 ];
 
@@ -312,7 +338,7 @@ try {
     // A filtered run still needs the developer mode (normally enabled by the dev-ui shot).
     if (ONLY) await enableDevMode(page);
     const shots = SHOTS.filter((s) => !ONLY || s.name.startsWith(ONLY));
-    for (const shot of split ? shots.slice(0, 6) : shots) {
+    for (const shot of split ? shots.filter((s, index) => index < 6 || s.split) : shots) {
       if (shot.wideOnly && !wide) continue;
       await page.goto(`${PREVIEW_URL}#${shot.route}`, { waitUntil: 'networkidle' });
       // Same hash = no navigation; reload so dialogs from the previous shot are gone.

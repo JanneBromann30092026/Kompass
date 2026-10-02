@@ -75,3 +75,27 @@ export function searchDocuments<T extends SearchDocument>(
     .sort((a, b) => b.score - a.score || a.index - b.index)
     .map((entry) => entry.document);
 }
+
+/**
+ * The text part that explains a match best (most query words), shortened for result
+ * previews; undefined if only the title or an alias matched.
+ */
+export function searchSnippet(
+  document: SearchDocument,
+  query: string,
+  maxLength = 160,
+): string | undefined {
+  const words = query.trim().split(/\s+/).filter(Boolean).map(searchForms);
+  let best: { text: string; hits: number } | undefined;
+  for (const text of document.text ?? []) {
+    const forms = searchForms(text);
+    const hits = words.filter((variants) =>
+      variants.some((v) => forms.some((form) => form.includes(v))),
+    ).length;
+    if (hits > (best?.hits ?? 0)) best = { text, hits };
+  }
+  if (!best) return undefined;
+  return best.text.length > maxLength
+    ? `${best.text.slice(0, maxLength - 1).trimEnd()}…`
+    : best.text;
+}

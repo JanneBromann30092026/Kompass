@@ -17,6 +17,15 @@ import { TabBar } from './TabBar';
 // Developer tools are rarely used: own chunk, loaded on demand.
 const DevUiPage = lazy(() => import('@/features/dev/DevUiPage'));
 
+// Knowledge view: one chunk for all its pages.
+const knowledge = () => import('@/features/knowledge');
+const KnowledgePage = lazy(() => knowledge().then((m) => ({ default: m.KnowledgePage })));
+const KnowledgeDetailPage = lazy(() =>
+  knowledge().then((m) => ({ default: m.KnowledgeDetailPage })),
+);
+const PrioritiesPage = lazy(() => knowledge().then((m) => ({ default: m.PrioritiesPage })));
+const QuestionnairePage = lazy(() => knowledge().then((m) => ({ default: m.QuestionnairePage })));
+
 function DatabaseErrorBanner() {
   const database = useAppStatus((s) => s.database);
   if (!database || database.ok) return null;
@@ -58,6 +67,10 @@ function AnimatedRoutes() {
             <Route path="/reminders" element={<ComingSoonPage page="reminders" />} />
             <Route path="/campaigns" element={<ComingSoonPage page="campaigns" />} />
             <Route path="/network" element={<ComingSoonPage page="network" />} />
+            <Route path="/knowledge" element={<KnowledgePage />} />
+            <Route path="/knowledge/priorities" element={<PrioritiesPage />} />
+            <Route path="/knowledge/questionnaire" element={<QuestionnairePage />} />
+            <Route path="/knowledge/:kind/:key" element={<KnowledgeDetailPage />} />
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="/dev/ui" element={<DevUiPage />} />
             <Route path="*" element={<Navigate to="/dashboard" replace />} />

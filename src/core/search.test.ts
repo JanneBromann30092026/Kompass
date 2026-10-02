@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { normalizeSearchText, searchDocuments, searchScore } from './search';
+import { normalizeSearchText, searchDocuments, searchScore, searchSnippet } from './search';
 
 const docs = [
   { title: 'Berufsunfähigkeitsversicherung', aliases: ['BU'], text: ['Rente bei Krankheit'] },
@@ -28,5 +28,17 @@ describe('search', () => {
     expect(searchDocuments(docs, 'bu einbruch')).toHaveLength(0);
     expect(searchScore(docs[1]!, 'hausrat')).toBeGreaterThan(searchScore(docs[1]!, 'einbruch'));
     expect(searchDocuments(docs, '')).toEqual([]);
+  });
+
+  it('picks the text part with the most query words as snippet', () => {
+    const document = {
+      title: 'BU',
+      text: ['Zahlt eine Rente.', 'Nachversicherung ohne Gesundheitsprüfung möglich.'],
+    };
+    expect(searchSnippet(document, 'gesundheitsprufung nachvers')).toBe(
+      'Nachversicherung ohne Gesundheitsprüfung möglich.',
+    );
+    expect(searchSnippet(document, 'bu')).toBeUndefined();
+    expect(searchSnippet({ title: 'X', text: ['a'.repeat(200)] }, 'a', 20)).toHaveLength(20);
   });
 });
