@@ -130,7 +130,7 @@ describe('question catalogue', () => {
       lifePhase: 'retirement',
       children: 0,
       employerVl: false,
-      contracts: { liability: 'concluded' } as CustomerInput['contracts'],
+      contracts: { liability: 'concluded' },
       answers: { sport: 'Radfahren' },
     });
     const left = unansweredOpenPoints(retired, QUESTIONNAIRE);
@@ -177,7 +177,7 @@ describe('customer list', () => {
       occupation: 'Azubi Mechatroniker',
       birthDate: '2007-10-05',
       lifePhase: 'training',
-      contracts: { bu: 'concluded' } as CustomerInput['contracts'],
+      contracts: { bu: 'concluded' },
       consents: { marketing: { granted: true, date: TODAY } },
     },
     { number: 'K-0003', updatedAt: '2026-09-30T10:00:00.000Z' },
