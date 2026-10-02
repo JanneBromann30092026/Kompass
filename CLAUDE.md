@@ -110,7 +110,7 @@ Touch-first (iPad), wie Synapse:
 - [x] 4 Kundenverwaltung
 - [x] 5 Bedarfs-Engine & Gesprächsaufhänger
 - [x] 6 Wiedervorlagen
-- [ ] 7 Gespräche & Gesprächsvorbereitung
+- [x] 7 Gespräche & Gesprächsvorbereitung
 - [ ] 8 Dashboard & Pipeline
 - [ ] 9 Segmente & Aktionen
 - [ ] 10 Einstellungen & optionale KI
@@ -190,3 +190,10 @@ Touch-first (iPad), wie Synapse:
   - UI in src/features/reminders: Seite (Überfällig/Heute/Nächste 30 Tage/31–90 Tage/Später, Filter nach Anlass, Erledigte einblendbar), Abschnitt in der Akte direkt unter dem Steckbrief, nächste Wiedervorlage in der Kundenliste, Fälligkeits-Badge (Bernstein, `--on-amber`) an Tab/Seitenleiste mit Screenreader-Text.
   - **App-Badge (Badging API): bewusst nicht umgesetzt.** iPadOS zeigt `setAppBadge` für Homescreen-Apps nur mit erteilter Mitteilungs-Berechtigung (Push); die wollen wir nicht anfragen.
   - Kalender-Export (src/core/reminders/ics.ts, calendar.ts): ganztägige Termine, Erinnerung am Vortag 9 Uhr (`TRIGGER:-PT15H`), CRLF, Zeilenfaltung nach 75 Byte (UTF-8-sicher). Pseudonymisiert: nur „K-Nummer · Anlass“, nie Titel/To-do (Freitext); der 18. Geburtstag heißt im Kalender „Verträge umstellen“, damit das Datum nicht das Geburtsdatum verrät. Datei beim Öffnen des Dialogs erzeugt; „Teilen“ (Teilen-Menü) und „Kalenderdatei öffnen“ (Download).
+- Schritt 7 (Gespräche & Gesprächsvorbereitung):
+  - Gesprächsnotiz mit eigenen Feldern (verschlüsselte Payload, keine Migration): `title` (= Anlass, mit Vorschlags-Chips), `participants`, `discussed`, `results`, `openItems`, `nextSteps`; `notes` bleibt für Freitext älterer/synthetischer Gespräche. Demo-Notizen mit Überschriften („Besprochen:“ …) werden beim Laden auf die Felder verteilt (`noteSections`).
+  - Vorbereitung (src/core/conversations/prepare.ts, getestet): offene Bedarfe (jetzt vor später, nach Priorität, max. 6), 3 Aufhänger, je „jetzt“-Sparte der häufigste Einwand (max. 3), offene Punkte, Wiedervorlagen bis 30 Tage (überfällige immer), letztes Gespräch. Seite /customers/:id/prepare in drei Spalten (Steckbrief + Fällig · Bedarfe + Offene Punkte · Aufhänger + Einwände); passt im Vollbild (Fokusmodus) auf eine Querformat-Seite.
+  - Formular /customers/:id/conversations/new bzw. /:conversationId: Entwurf je Kunde/Gespräch verschlüsselt in `drafts` (Art `conversation`, Hook `useDraftSaver` jetzt gemeinsam mit dem Fragenkatalog), übersteht Sperren/Neuladen. Das fokussierte Feld wird über die Bildschirmtastatur geschoben (`scrollIntoView({block: 'end'})` mit `scroll-margin-bottom` – Chromium ignoriert den Rand bei `nearest`), auch beim Feldwechsel.
+  - Diktat: Hinweis auf das Mikrofon der iPad-Tastatur; zusätzlich Button über die Web Speech API (src/services/speech/dictation.ts, `SpeechRecognition`/`webkitSpeechRecognition`, de-DE, Zwischentext sichtbar, Endtext wird an das zuletzt gewählte Feld angehängt), nur wenn vorhanden; einmaliger Hinweis „Diktat über Apple“ (Einstellung `dictationNoticeSeen`). Achtung Tests: Chromium bringt selbst eine Spracherkennung mit – Mocks müssen beide Namen setzen bzw. löschen.
+  - Schnelle Aktionen im Formular sind die bekannten Karten (Verträge, Wiedervorlagen, Lebensereignisse) plus Einwilligungen (Werbung, bei Minderjährigen Zustimmung der Eltern) – sie speichern sofort mit Verlaufseintrag. Speichern des Gesprächs setzt das letzte Gespräch; der Wiedervorlagen-Abgleich verschiebt dadurch das Jahresgespräch automatisch.
+  - Akte: Buttons „Gesprächsvorbereitung“ und „Gespräch erfassen“ im Kopf, Abschnitt „Gespräche“ (neueste zuerst, aufklappbar, Bearbeiten/Löschen). Der Platzhalter `LaterSection` ist entfernt.
