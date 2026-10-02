@@ -128,9 +128,11 @@ function MenuPanel({
 export function ActionMenuButton({
   items,
   label = de.ui.moreActions,
+  testId,
 }: {
   items: ActionMenuItem[];
   label?: string;
+  testId?: string;
 }) {
   const [anchor, setAnchor] = useState<DOMRect | null>(null);
   return (
@@ -141,6 +143,7 @@ export function ActionMenuButton({
         aria-haspopup="menu"
         aria-expanded={anchor !== null}
         onClick={(event) => setAnchor(event.currentTarget.getBoundingClientRect())}
+        data-testid={testId}
       />
       <ActionMenu
         open={anchor !== null}

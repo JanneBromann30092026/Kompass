@@ -132,7 +132,10 @@ test('question catalogue completely answered', async ({ page }) => {
   );
   await expect(page.getByTestId('file-open-points')).toContainText('Keine offenen Punkte.');
   await expect(file.getByTestId('file-answers')).toContainText('ETF seit 2024');
-  await expect(page.getByTestId('history-entry').first()).toContainText('Akte angelegt');
+  // Automatic reminders (annual review) may follow in the history.
+  await expect(page.getByTestId('history-entry').filter({ hasText: 'Akte angelegt' })).toHaveCount(
+    1,
+  );
 
   // Nothing readable in the database, the draft is gone.
   const dump = await storageDump(page);
@@ -169,8 +172,8 @@ test('skipped questions become open points and settle when answered', async ({ p
   await expect(page.getByTestId('file-person')).toContainText('2');
 
   // The history shows the change (old → new).
-  const latest = page.getByTestId('history-entry').first();
-  await expect(latest).toContainText('Akte geändert');
+  const latest = page.getByTestId('history-entry').filter({ hasText: 'Akte geändert' }).first();
+  await expect(latest).toBeVisible();
   await latest.getByRole('button').click();
   await expect(latest).toContainText(/Kinder:\s*– → 2/);
   await expect(latest).toContainText(/Offene Punkte:\s*− Person: Kinder/);
@@ -278,8 +281,8 @@ test('contract status, editing with validation, archive and delete', async ({ pa
   await page.getByTestId('contract-chip-bu').click();
   await page.getByRole('menuitem', { name: 'abgeschlossen' }).click();
   await expect(page.getByTestId('contract-chip-bu')).toHaveAttribute('data-status', 'concluded');
-  const latest = page.getByTestId('history-entry').first();
-  await expect(latest).toContainText('Vertrag BU');
+  const latest = page.getByTestId('history-entry').filter({ hasText: 'Vertrag BU' }).first();
+  await expect(latest).toBeVisible();
   await latest.getByRole('button').click();
   await expect(latest).toContainText(/Vertrag BU:\s*angeboten → abgeschlossen/);
 
@@ -298,7 +301,7 @@ test('contract status, editing with validation, archive and delete', async ({ pa
   await expect(page.getByTestId('contact-email')).toHaveAttribute('href', 'mailto:ben@example.com');
 
   // Archive instead of delete: hidden from the list, kept in the archive.
-  await page.getByRole('button', { name: 'Aktionen' }).click();
+  await page.getByRole('button', { name: 'Aktionen', exact: true }).click();
   await page.getByRole('menuitem', { name: 'Archivieren' }).click();
   await expect(page.getByTestId('archived-banner')).toBeVisible();
   await page.getByTestId('file-back').click();
@@ -311,7 +314,7 @@ test('contract status, editing with validation, archive and delete', async ({ pa
   await page.getByTestId('customer-row').filter({ hasText: 'Ben Hartmann' }).click();
 
   // Deleting removes the file with everything that belongs to it.
-  await page.getByRole('button', { name: 'Aktionen' }).click();
+  await page.getByRole('button', { name: 'Aktionen', exact: true }).click();
   await page.getByRole('menuitem', { name: 'Endgültig löschen' }).click();
   await page.getByRole('alertdialog').getByRole('button', { name: 'Endgültig löschen' }).click();
   await expect(page.getByTestId('customers-page')).toBeVisible();
@@ -338,5 +341,8 @@ test('life events can be added, changed and removed', async ({ page }) => {
   await page.getByRole('button', { name: 'Ereignis löschen' }).click();
   await page.getByRole('alertdialog').getByRole('button', { name: 'Ereignis löschen' }).click();
   await expect(events).toContainText('Noch keine Lebensereignisse.');
-  await expect(page.getByTestId('history-entry').first()).toContainText('Ereignis gelöscht');
+  // Automatic reminders of the event may follow in the history.
+  await expect(
+    page.getByTestId('history-entry').filter({ hasText: 'Ereignis gelöscht' }),
+  ).toHaveCount(1);
 });

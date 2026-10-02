@@ -188,6 +188,15 @@ const reminderFields = {
   dateToCheck: z.boolean().default(false),
   done: z.boolean().default(false),
   doneAt: timestamp.optional(),
+  /** Note when completing (shown in the history). */
+  doneNote: optionalText(LIMITS.text),
+  /**
+   * Automatic reminders: rule and the date it computed (src/core/reminders). Manual
+   * reminders have none. Encrypted like everything else, it may contain dates.
+   */
+  ruleKey: z.string().max(200).optional(),
+  /** The life event behind a reminder of kind "lifeEvent". */
+  event: z.enum(LIFE_EVENT_KINDS).optional(),
 };
 export const reminderInputSchema = z.object(reminderFields);
 export const reminderSchema = z.object({ ...linkedBase, ...reminderFields });

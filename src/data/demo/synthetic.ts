@@ -2,9 +2,10 @@
  * Synthetic customers for performance tests (developer mode). Plausible but random
  * combinations, deterministic for a seed. Marked as demo data with the tag "Synthetisch".
  */
-import { addDays, addMonths, firstOfMonth } from '@/core/dates';
+import { addDays, addMonths } from '@/core/dates';
 import { deterministicUuid } from '@/core/deterministicId';
 import { diffRecords } from '@/core/history';
+import { deriveReminders } from '@/core/reminders/derive';
 import { formatCustomerNumber } from '@/core/customerNumber';
 import {
   CONTACT_CHANNELS,
@@ -143,7 +144,7 @@ export interface SyntheticOptions {
   seed?: number;
 }
 
-/** `count` synthetic customers with a conversation, one or two reminders and history. */
+/** `count` synthetic customers with a conversation, the derived reminders and history. */
 export function buildSyntheticCustomers(count: number, options: SyntheticOptions): DemoBuild[] {
   const { today, now, firstSequence } = options;
   const r = random(options.seed ?? firstSequence);
@@ -214,32 +215,25 @@ export function buildSyntheticCustomers(count: number, options: SyntheticOptions
       createdAt,
       updatedAt: createdAt,
     };
-    const reminders: Reminder[] = [
-      {
-        id: linked('reminder', 0),
+    const reminders: Reminder[] = deriveReminders(
+      { customer, lifeEvents: [], conversations: [conversation], reminders: [] },
+      today,
+    )
+      .filter((candidate) => candidate.creatable)
+      .map((candidate, n) => ({
+        id: linked('reminder', n),
         customerId: id,
-        dueDate: addMonths(lastConversation, 12),
-        kind: 'annualReview',
-        title: 'Jahresgespräch',
-        dateToCheck: false,
+        dueDate: candidate.dueDate,
+        kind: candidate.kind,
+        event: candidate.event,
+        title: candidate.title,
+        todo: candidate.todo,
+        dateToCheck: candidate.dateToCheck,
         done: false,
+        ruleKey: candidate.ruleKey,
         createdAt,
         updatedAt: createdAt,
-      },
-    ];
-    if (customer.trainingEnd) {
-      reminders.push({
-        id: linked('reminder', 1),
-        customerId: id,
-        dueDate: firstOfMonth(addMonths(`${customer.trainingEnd}-01`, -3)),
-        kind: 'trainingEnd',
-        title: phase === 'studies' ? 'Studienende' : 'Ausbildungsende',
-        dateToCheck: false,
-        done: false,
-        createdAt,
-        updatedAt: createdAt,
-      });
-    }
+      }));
     const history: HistoryEntry[] = [
       {
         id: linked('history', 0),

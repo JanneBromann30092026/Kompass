@@ -98,7 +98,7 @@ export function NeedCard({ customerId, view }: { customerId: string; view: NeedV
         <motion.div
           key={celebrate}
           aria-hidden
-          className="need-glow pointer-events-none absolute inset-0 rounded-xl"
+          className="success-glow pointer-events-none absolute inset-0 rounded-xl"
           initial={{ opacity: 0 }}
           animate={{ opacity: [0, 1, 1, 0] }}
           transition={{ duration: 1.8, times: [0, 0.12, 0.5, 1], ease: easeOut }}

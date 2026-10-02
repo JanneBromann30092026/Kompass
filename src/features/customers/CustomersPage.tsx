@@ -7,6 +7,7 @@ import { useToday } from '@/app/hooks/useToday';
 import { Page } from '@/app/shell/Page';
 import { activeFilterCount, filterCustomers, type CustomerFilter } from '@/core/customers/list';
 import { CONTRACT_STATUS_LABELS, LIFE_PHASE_INFO, PRODUCT_LINE_INFO } from '@/data/reference';
+import { nextReminders } from '@/core/reminders/schedule';
 import { useDataStore } from '@/data/store';
 import { de } from '@/i18n/de';
 import { CustomerRow } from './components/CustomerRow';
@@ -66,6 +67,8 @@ export function CustomersPage() {
   const navigate = useNavigate();
   const today = useToday();
   const customers = useDataStore((s) => s.customers);
+  const reminders = useDataStore((s) => s.reminders);
+  const next = useMemo(() => nextReminders(Object.values(reminders)), [reminders]);
   const query = useCustomerList((s) => s.query);
   const filter = useCustomerList((s) => s.filter);
   const sort = useCustomerList((s) => s.sort);
@@ -174,7 +177,12 @@ export function CustomersPage() {
           <Surface padding="none" className="overflow-hidden">
             <ul className="divide-y divide-line" data-testid="customer-list">
               {shown.map((customer) => (
-                <CustomerRow key={customer.id} customer={customer} today={today} />
+                <CustomerRow
+                  key={customer.id}
+                  customer={customer}
+                  today={today}
+                  next={next.get(customer.id)}
+                />
               ))}
             </ul>
           </Surface>

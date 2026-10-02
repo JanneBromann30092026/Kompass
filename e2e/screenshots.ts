@@ -311,6 +311,38 @@ async function customerHooks(page: Page) {
   await scrollToTestId(page, 'file-hooks', 'center');
 }
 
+async function remindersList(page: Page) {
+  await ensureDemo(page);
+  await page.goto(`${PREVIEW_URL}#/reminders`);
+  await page.getByTestId('reminders-page').waitFor();
+}
+
+async function remindersComplete(page: Page) {
+  await remindersList(page);
+  const row = page.getByTestId('reminder-row').filter({ hasText: 'Führerschein' }).first();
+  await row.getByTestId('reminder-complete').click();
+  await page.getByTestId('complete-dialog').waitFor();
+  await page.getByTestId('complete-note').fill('Fährt bei den Eltern mit, Angebot folgt');
+  await page.getByRole('switch', { name: 'Folgeaufgabe anlegen' }).click();
+}
+
+async function remindersMenu(page: Page) {
+  await remindersList(page);
+  await page.getByTestId('reminder-row').first().getByTestId('reminder-menu').click();
+  await page.getByRole('menu').waitFor();
+}
+
+async function remindersCalendar(page: Page) {
+  await remindersList(page);
+  await page.getByTestId('reminders-export').click();
+  await page.getByTestId('calendar-dialog').waitFor();
+}
+
+async function customerReminders(page: Page) {
+  await openCustomer(page, 'Ben');
+  await scrollToTestId(page, 'file-reminders');
+}
+
 /** Starts the question catalogue without the draft of the previous shot. */
 async function freshWizard(page: Page) {
   await page.getByTestId('wizard').waitFor();
@@ -416,6 +448,17 @@ const SHOTS: Shot[] = [
   { route: '/customers', name: 'customers-need-edit', prepare: customerNeedEdit },
   { route: '/customers', name: 'customers-need-recheck', prepare: customerNeedRecheck },
   { route: '/customers', name: 'customers-hooks', prepare: customerHooks, split: true },
+  { route: '/customers', name: 'customers-reminders', prepare: customerReminders },
+  {
+    route: '/customers',
+    name: 'reminders-list',
+    prepare: remindersList,
+    scroll: true,
+    split: true,
+  },
+  { route: '/customers', name: 'reminders-complete', prepare: remindersComplete },
+  { route: '/customers', name: 'reminders-menu', prepare: remindersMenu },
+  { route: '/customers', name: 'reminders-calendar', prepare: remindersCalendar },
   { route: '/customers/new', name: 'customers-new', prepare: wizardStart, split: true },
   { route: '/customers/new', name: 'customers-new-job', prepare: wizardJob },
   { route: '/customers/new', name: 'customers-new-summary', prepare: wizardSummary, scroll: true },
