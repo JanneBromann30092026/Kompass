@@ -110,12 +110,29 @@ export interface DescribedChange {
   label: string;
   from: string;
   to: string;
+  /** Lists (tags, open points): only what was removed (−) and added (+). */
+  diff?: string;
+}
+
+function listDiff(entity: HistoryEntity, path: string, from: unknown[], to: unknown[]): string {
+  const text = (items: unknown[]) => items.map((item) => valueText(entity, path, item)).join(', ');
+  const removed = from.filter((item) => !to.includes(item));
+  const added = to.filter((item) => !from.includes(item));
+  return [removed.length > 0 && `− ${text(removed)}`, added.length > 0 && `+ ${text(added)}`]
+    .filter(Boolean)
+    .join(' · ');
 }
 
 export function describeChange(entity: HistoryEntity, change: FieldChange): DescribedChange {
-  return {
+  const described: DescribedChange = {
     label: fieldLabel(entity, change.path),
     from: valueText(entity, change.path, change.from),
     to: valueText(entity, change.path, change.to),
   };
+  if (Array.isArray(change.from) || Array.isArray(change.to)) {
+    const from = Array.isArray(change.from) ? change.from : [];
+    const to = Array.isArray(change.to) ? change.to : [];
+    described.diff = listDiff(entity, change.path, from, to);
+  }
+  return described;
 }

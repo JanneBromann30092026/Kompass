@@ -77,7 +77,7 @@ function Entry({ entry }: { entry: HistoryEntry }) {
                   <dt className="text-fg-secondary">{change.label}:</dt>
                   <dd className="min-w-0 break-words text-fg">
                     {entry.action === 'updated'
-                      ? `${change.from} → ${change.to}`
+                      ? (change.diff ?? `${change.from} → ${change.to}`)
                       : entry.action === 'deleted'
                         ? change.from
                         : change.to}

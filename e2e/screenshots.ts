@@ -196,7 +196,10 @@ async function ensureDemo(page: Page) {
   await section.waitFor();
   if ((await section.getByTestId('demo-count').textContent()) === '0') {
     await section.getByRole('button', { name: 'Demo-Daten laden' }).click();
-    await section.getByTestId('demo-count').filter({ hasText: /^1[2-9]$/ }).waitFor();
+    await section
+      .getByTestId('demo-count')
+      .filter({ hasText: /^1[2-9]$/ })
+      .waitFor();
   }
   await page.goto(`${PREVIEW_URL}#/customers`);
   await page.getByTestId('customer-row').first().waitFor();
@@ -227,7 +230,10 @@ const customerFile = (page: Page) => openCustomer(page, 'Ben');
 
 async function customerEdit(page: Page) {
   await openCustomer(page, 'Ben');
-  await page.getByTestId('file-contact').getByRole('button', { name: /bearbeiten/ }).click();
+  await page
+    .getByTestId('file-contact')
+    .getByRole('button', { name: /bearbeiten/ })
+    .click();
   await page.getByTestId('section-editor').waitFor();
   await page.getByTestId('field-phone').focus();
   await setKeyboard(page, true);
@@ -332,7 +338,13 @@ const SHOTS: Shot[] = [
   { route: '/dev/ui', name: 'dev-ui', prepare: enableDevMode, scroll: true },
   { route: '/dev/ui', name: 'dev-vault', prepare: devVault },
   { route: '/dev/ui', name: 'dev-demo', prepare: devDemo },
-  { route: '/customers', name: 'customers-list', prepare: customersList, scroll: true, split: true },
+  {
+    route: '/customers',
+    name: 'customers-list',
+    prepare: customersList,
+    scroll: true,
+    split: true,
+  },
   { route: '/customers', name: 'customers-filter', prepare: customersFilter },
   { route: '/customers', name: 'customers-search', prepare: customersSearch },
   { route: '/customers', name: 'customers-file', prepare: customerFile, scroll: true, split: true },
