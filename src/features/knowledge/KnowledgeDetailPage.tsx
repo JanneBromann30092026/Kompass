@@ -36,13 +36,14 @@ import {
   BackButton,
   BulletList,
   ChipList,
-  CustomersPlaceholder,
   DetailSection,
   EntryCard,
   Hero,
   Hint,
+  MatchingCustomers,
   PriorityBadge,
 } from './parts';
+import { useMatchingCustomers } from './matching';
 
 const t = de.knowledge;
 
@@ -123,7 +124,10 @@ function ProductDetail({ line }: { line: ProductLine }) {
         </DetailSection>
       </div>
       <Hint>{RULE_DISCLAIMER}</Hint>
-      <CustomersPlaceholder title={t.product.customers} />
+      <MatchingCustomers
+        title={t.product.customers}
+        customers={useMatchingCustomers({ kind: 'product', key: line })}
+      />
     </>
   );
 }
@@ -157,7 +161,10 @@ function PhaseDetail({ phase }: { phase: LifePhase }) {
           </DetailSection>
         )}
       </div>
-      <CustomersPlaceholder title={t.phase.customers} />
+      <MatchingCustomers
+        title={t.phase.customers}
+        customers={useMatchingCustomers({ kind: 'phase', key: phase })}
+      />
     </>
   );
 }
@@ -191,7 +198,10 @@ function EventDetail({ event }: { event: LifeEventKind }) {
           <ChipList entries={phases(phasesWithEvent(event))} />
         </DetailSection>
       )}
-      <CustomersPlaceholder title={t.event.customers} />
+      <MatchingCustomers
+        title={t.event.customers}
+        customers={useMatchingCustomers({ kind: 'event', key: event })}
+      />
     </>
   );
 }
@@ -220,7 +230,10 @@ function TopicDetail({ topic }: { topic: Topic }) {
           ))}
         </div>
       </section>
-      <CustomersPlaceholder title={t.topic.customers} />
+      <MatchingCustomers
+        title={t.topic.customers}
+        customers={useMatchingCustomers({ kind: 'topic', key: topic })}
+      />
     </>
   );
 }

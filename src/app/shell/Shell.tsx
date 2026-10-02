@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react';
-import { Navigate, Route, Routes, useLocation } from 'react-router';
+import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router';
 import { AnimatePresence, motion } from 'motion/react';
 import { Spinner } from '@/components/ui';
 import { ComingSoonPage } from '@/features/coming-soon/ComingSoonPage';
@@ -9,6 +9,7 @@ import { easeOut } from '@/styles/motion';
 import { useReducedMotion } from '@/styles/useReducedMotion';
 import { ShortcutsOverlay } from '../shortcuts/ShortcutsOverlay';
 import { useAppStatus } from '../useAppStatus';
+import { useHotkeys } from '../hooks/useHotkeys';
 import { useMediaQuery, WIDE_LAYOUT_QUERY } from '../hooks/useMediaQuery';
 import { useFocusMode } from './focusMode';
 import { Sidebar } from './Sidebar';
@@ -25,6 +26,12 @@ const KnowledgeDetailPage = lazy(() =>
 );
 const PrioritiesPage = lazy(() => knowledge().then((m) => ({ default: m.PrioritiesPage })));
 const QuestionnairePage = lazy(() => knowledge().then((m) => ({ default: m.QuestionnairePage })));
+
+// Customers: list, file and the question catalogue share a chunk.
+const customers = () => import('@/features/customers');
+const CustomersPage = lazy(() => customers().then((m) => ({ default: m.CustomersPage })));
+const CustomerFilePage = lazy(() => customers().then((m) => ({ default: m.CustomerFilePage })));
+const NewCustomerPage = lazy(() => customers().then((m) => ({ default: m.NewCustomerPage })));
 
 function DatabaseErrorBanner() {
   const database = useAppStatus((s) => s.database);
@@ -63,7 +70,9 @@ function AnimatedRoutes() {
           <Routes location={location}>
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
             <Route path="/dashboard" element={<ComingSoonPage page="dashboard" />} />
-            <Route path="/customers" element={<ComingSoonPage page="customers" />} />
+            <Route path="/customers" element={<CustomersPage />} />
+            <Route path="/customers/new" element={<NewCustomerPage />} />
+            <Route path="/customers/:id" element={<CustomerFilePage />} />
             <Route path="/reminders" element={<ComingSoonPage page="reminders" />} />
             <Route path="/campaigns" element={<ComingSoonPage page="campaigns" />} />
             <Route path="/network" element={<ComingSoonPage page="network" />} />
@@ -81,7 +90,22 @@ function AnimatedRoutes() {
   );
 }
 
+/** App-wide keyboard shortcuts (hardware keyboard); not while a dialog is open. */
+function useGlobalShortcuts() {
+  const navigate = useNavigate();
+  useHotkeys([
+    {
+      combo: 'n',
+      handler: () => {
+        if (document.querySelector('[aria-modal="true"]')) return;
+        void navigate('/customers/new');
+      },
+    },
+  ]);
+}
+
 export function Shell() {
+  useGlobalShortcuts();
   const wide = useMediaQuery(WIDE_LAYOUT_QUERY);
   const focus = useFocusMode();
   const reduced = useReducedMotion();
