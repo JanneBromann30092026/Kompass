@@ -6,7 +6,7 @@ import { useSettings } from '@/features/settings/settingsStore';
 import { de } from '@/i18n/de';
 import { vault } from '@/services/vault';
 import { spring } from '@/styles/motion';
-import { navItems } from './navItems';
+import { knowledgeItem, navItems, type NavItem } from './navItems';
 
 const EXPANDED_WIDTH = 264;
 const COLLAPSED_WIDTH = 84;
@@ -24,18 +24,45 @@ function MaybeTooltip({
   return show ? <Tooltip content={content}>{children}</Tooltip> : <>{children}</>;
 }
 
+const itemClass = (isActive: boolean, collapsed: boolean) =>
+  cn(
+    'focus-ring no-callout relative flex min-h-11 items-center gap-3 rounded-full px-3.5 text-base font-medium transition-colors',
+    isActive ? 'text-accent' : 'text-fg-secondary hover:text-fg',
+    collapsed && 'justify-center px-0',
+  );
+
+function SidebarLink({ item, collapsed }: { item: NavItem; collapsed: boolean }) {
+  const { to, label, icon: Icon } = item;
+  return (
+    <MaybeTooltip show={collapsed} content={label}>
+      <NavLink
+        to={to}
+        className={({ isActive }) => cn(itemClass(isActive, collapsed), 'w-full')}
+        aria-label={collapsed ? label : undefined}
+      >
+        {({ isActive }) => (
+          <>
+            {isActive && (
+              <motion.span
+                layoutId="sidebar-nav"
+                transition={spring.default}
+                className="absolute inset-0 rounded-full bg-accent-soft"
+              />
+            )}
+            <Icon size={22} aria-hidden className="relative shrink-0" />
+            {!collapsed && <span className="relative truncate">{label}</span>}
+          </>
+        )}
+      </NavLink>
+    </MaybeTooltip>
+  );
+}
+
 /** Wide layout (≥ 900 px): collapsible sidebar with the main navigation. */
 export function Sidebar() {
   const collapsed = useSettings((s) => s.sidebarCollapsed);
   const devMode = useSettings((s) => s.devMode);
   const setSetting = useSettings((s) => s.set);
-
-  const itemClass = (isActive: boolean) =>
-    cn(
-      'focus-ring no-callout relative flex min-h-11 items-center gap-3 rounded-full px-3.5 text-base font-medium transition-colors',
-      isActive ? 'text-accent' : 'text-fg-secondary hover:text-fg',
-      collapsed && 'justify-center px-0',
-    );
 
   return (
     <motion.aside
@@ -63,38 +90,19 @@ export function Sidebar() {
       </div>
 
       <nav aria-label={de.nav.label} className="flex flex-col gap-1 px-3">
-        {navItems(devMode).map(({ to, label, icon: Icon }) => (
-          <MaybeTooltip key={to} show={collapsed} content={label}>
-            <NavLink
-              to={to}
-              className={({ isActive }) => cn(itemClass(isActive), collapsed && 'w-full')}
-              aria-label={collapsed ? label : undefined}
-            >
-              {({ isActive }) => (
-                <>
-                  {isActive && (
-                    <motion.span
-                      layoutId="sidebar-nav"
-                      transition={spring.default}
-                      className="absolute inset-0 rounded-full bg-accent-soft"
-                    />
-                  )}
-                  <Icon size={22} aria-hidden className="relative shrink-0" />
-                  {!collapsed && <span className="relative truncate">{label}</span>}
-                </>
-              )}
-            </NavLink>
-          </MaybeTooltip>
+        {navItems(devMode).map((item) => (
+          <SidebarLink key={item.to} item={item} collapsed={collapsed} />
         ))}
       </nav>
 
-      <div className={cn('mt-auto px-3', collapsed && 'flex justify-center')}>
+      <div className={cn('mt-auto flex flex-col gap-1 px-3', collapsed && 'items-center')}>
+        <SidebarLink item={knowledgeItem} collapsed={collapsed} />
         <MaybeTooltip show={collapsed} content={de.nav.lock}>
           <button
             type="button"
             onClick={() => vault.lock('manual')}
             aria-label={collapsed ? de.nav.lock : undefined}
-            className={cn(itemClass(false), 'w-full')}
+            className={cn(itemClass(false, collapsed), 'w-full')}
             data-testid="sidebar-lock"
           >
             <Lock size={22} aria-hidden className="shrink-0" />

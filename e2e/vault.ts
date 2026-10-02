@@ -42,3 +42,30 @@ export async function enableDevMode(page: Page): Promise<void> {
   if ((await toggle.getAttribute('aria-checked')) !== 'true') await toggle.click();
   await page.getByText('Testpasswort').first().waitFor();
 }
+
+/** Everything in IndexedDB and localStorage as text (byte arrays decoded) to look for plaintext. */
+export async function storageDump(
+  page: Page,
+): Promise<{ indexedDb: string; localStorage: string }> {
+  return page.evaluate(async () => {
+    const db = await new Promise<IDBDatabase>((resolve, reject) => {
+      const request = indexedDB.open('kompass');
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error ?? new Error('open failed'));
+    });
+    const parts: string[] = [];
+    for (const name of Array.from(db.objectStoreNames)) {
+      const rows = await new Promise<unknown[]>((resolve) => {
+        const request = db.transaction(name).objectStore(name).getAll();
+        request.onsuccess = () => resolve(request.result as unknown[]);
+      });
+      parts.push(
+        JSON.stringify(rows, (_key, value: unknown) =>
+          value instanceof Uint8Array ? new TextDecoder('latin1').decode(value) : value,
+        ),
+      );
+    }
+    db.close();
+    return { indexedDb: parts.join('\n'), localStorage: JSON.stringify({ ...localStorage }) };
+  });
+}

@@ -106,7 +106,7 @@ Touch-first (iPad), wie Synapse:
 - [x] 0 Projektkontext (CLAUDE.md)
 - [x] 1 Fundament: Setup, PWA, Deployment, Design-System & Shell (aus Synapse)
 - [x] 2 Datenbank, Datenmodell & Verschlüsselung
-- [ ] 3 Fachwissen & Demo-Daten
+- [x] 3 Fachwissen & Demo-Daten
 - [ ] 4 Kundenverwaltung
 - [ ] 5 Bedarfs-Engine & Gesprächsaufhänger
 - [ ] 6 Wiedervorlagen
@@ -158,3 +158,12 @@ Touch-first (iPad), wie Synapse:
   - Auto-Sperre (src/app/lock/useAutoLock.ts): Inaktivität (Einstellung 1–30 Min., Standard 5) per 5-s-Intervall, Hintergrund > 1 Min. per visibilitychange (iPadOS pausiert Timer im Hintergrund).
   - Tests: Playwrights `page.clock` war hier unzuverlässig (fastForward wirkte manchmal nicht, motion-Animationen blieben danach hängen) → eigene Zeitverschiebung nur für `Date.now()` per addInitScript; das Prüfintervall läuft in Echtzeit.
   - Testpasswort `Kompass-Test-2026!` (src/core/devConstants.ts = e2e/ipad.ts), im Entwicklermodus auf dem Sperrbildschirm und in den Einstellungen sichtbar. Entwicklerbereich „Verschlüsselung testen“: Testkunden anlegen/ändern/löschen, Ciphertext-Vorschau.
+- Schritt 3 (Fachwissen & Demo-Daten):
+  - Stammdaten in src/data/reference (unverschlüsselt, Teil des Codes): Sparten, Bedarfsregeln (inkl. `PRIORITIZATION`, `RULE_DISCLAIMER`), Lebensphasen, Lebensereignisse (mit Wiedervorlage-Regel als Daten: `eventDate`/`birthday`/`lastConversation`/`immediately`), Themen, Fragenkatalog, deutsche Bezeichnungen der Aufzählungen (labels.ts). zod-Schemas in reference/schemas.ts; reference.test.ts prüft alle Querverweise. Typisierung `Readonly<Record<Key, Info>>` statt `as const satisfies` (optionale Felder). Themen-Schlüssel `TOPICS` in domain.ts. Nur Aliase aus der Quelle (keine erfundenen Synonyme). Kfz ist in keiner Lebensphase typisch.
+  - Fragenkatalog an Kompass angepasst: Nachname/Telefon/E-Mail optional; „nicht speichern“: Adresse, IBAN, Steuer-ID, Vertragsnummern, Gesundheitsdaten.
+  - Ansicht „Wissen“ (src/features/knowledge, eigener Lazy-Chunk): Routen /knowledge, /knowledge/:kind/:key (product|phase|event|topic), /knowledge/priorities, /knowledge/questionnaire. Platzierung: **kein 7. Tab**, sondern Nebenlink in der Seitenleiste (über „Sperren“) und Karte „Nachschlagen“ in den Einstellungen (Tab-Bar-Layout; dort bleibt der Tab „Einstellungen“ markiert). Suche umlaut-tolerant (src/core/search.ts, „ä“ = „ae“ = „a“), Taste `/` fokussiert, Esc leert; die Suchanfrage bleibt beim Zurückkehren erhalten. Platzhalter „Kunden mit …“ (Schritt 4). `SearchInput` als neue UI-Komponente.
+  - Tailwind-Breakpoint `wide` in rem (56.25rem = 900 px): mit px sortierte Tailwind ihn **vor** `sm:` (rem), dann überschrieb `sm:` jede `wide:`-Klasse.
+  - Demo-Daten (src/data/demo, nur im Entwickler-Chunk geladen): 12 Kunden aus 01_Kunden/08_Gespraeche; K-0001 bekommt einen anderen erfundenen Vornamen (**Leon**). Erfundene Geburtsdaten (Geburtstage in den nächsten 7 Tagen: Ilka, Ben, Emma), einige Nachnamen, Telefon +49 000 …, E-Mail @example.com. Referenzdatum 2026-10-01: alle Daten werden um die Tage bis heute verschoben (Monate „JJJJ-MM“ und „MM/JJJJ“ im Text ab dem 15. gerechnet), nur-Jahrgang um Kalenderjahre (Finn bleibt minderjährig); Zeitstempel nie in der Zukunft. Verlauf: „angelegt“ mit dem Anfangszustand (spätere Änderungen per `applyFieldChanges` zurückgerechnet) + Änderungen. Wiedervorlagen für Ausbildungsende und 18. Geburtstag werden wie die Regeln aus Schritt 6 abgeleitet.
+  - Import idempotent über stabile IDs (`deterministicUuid`, FNV-1a); nur fehlende Kunden bekommen neue Nummern (`reserveCustomerSequences`). Nummern bleiben nach dem Entfernen verbraucht → vor echtem Einsatz Datenbank zurücksetzen. „Demo-Daten entfernen“ löscht alle `demo`-Kunden außer synthetischen (also auch Testkunden aus „Verschlüsselung testen“), `removeMany` in einer Transaktion.
+  - Synthetische Daten: 500 Kunden (Tag „Synthetisch“, mulberry32, deterministisch) in Batches à 50 Kunden pro Transaktion; `commit` schreibt per `bulkPut` je Tabelle. Im Cloud-Chromium dauert das Anlegen von 500 Kunden nur wenige Sekunden. „Entschlüsseln messen“ zeigt die Dauer wie beim Entsperren.
+

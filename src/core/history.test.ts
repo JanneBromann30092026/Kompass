@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { formatCustomerNumber, parseCustomerNumber } from './customerNumber';
-import { diffRecords } from './history';
+import { applyFieldChanges, diffRecords } from './history';
 import { nextTimestamp } from './time';
 
 describe('diffRecords', () => {
@@ -55,5 +55,21 @@ describe('nextTimestamp', () => {
     expect(nextTimestamp(undefined, now)).toBe('2026-10-01T10:00:00.000Z');
     expect(nextTimestamp('2026-10-01T10:00:00.000Z', now)).toBe('2026-10-01T10:00:00.001Z');
     expect(nextTimestamp('2026-10-01T11:00:00.000Z', now)).toBe('2026-10-01T11:00:00.001Z');
+  });
+});
+
+describe('applyFieldChanges', () => {
+  it('undoes and replays nested changes without touching the original', () => {
+    const record = { contracts: { bu: 'concluded' }, occupation: 'Azubi', phone: '0170' };
+    const changes = [
+      { path: 'contracts.bu', from: 'open', to: 'concluded' },
+      { path: 'occupation', from: 'Schüler', to: 'Azubi' },
+      { path: 'phone', to: '0170' },
+    ];
+    const before = applyFieldChanges(record, changes, 'from');
+    expect(before).toEqual({ contracts: { bu: 'open' }, occupation: 'Schüler' });
+    expect(applyFieldChanges(before, changes, 'to')).toEqual(record);
+    expect(record.contracts.bu).toBe('concluded');
+    expect(diffRecords(before, record)).toEqual(changes);
   });
 });

@@ -54,8 +54,8 @@ const optionalText = (max: number) =>
     .string()
     .trim()
     .max(max)
-    .optional()
-    .transform((value) => (value ? value : undefined));
+    .transform((value) => (value ? value : undefined))
+    .optional();
 
 const requiredText = (max: number) => z.string().trim().min(1).max(max);
 

@@ -1,14 +1,18 @@
-import { NavLink } from 'react-router';
+import { NavLink, useLocation } from 'react-router';
 import { motion } from 'motion/react';
 import { cn } from '@/components/ui';
 import { useSettings } from '@/features/settings/settingsStore';
 import { de } from '@/i18n/de';
 import { spring } from '@/styles/motion';
-import { navItems } from './navItems';
+import { knowledgeItem, navItems } from './navItems';
 
 /** Narrow layout (< 900 px: portrait, Split View): tab bar at the bottom. */
 export function TabBar() {
   const devMode = useSettings((s) => s.devMode);
+  const { pathname } = useLocation();
+  // The knowledge view is opened from the settings here, so their tab stays highlighted.
+  const inKnowledge = pathname.startsWith(knowledgeItem.to);
+  const active = (to: string, isActive: boolean) => isActive || (inKnowledge && to === '/settings');
   return (
     <nav
       aria-label={de.nav.label}
@@ -22,14 +26,14 @@ export function TabBar() {
             className={({ isActive }) =>
               cn(
                 'focus-ring no-callout flex min-h-14 min-w-0 flex-1 flex-col items-center justify-center gap-0.5 rounded-lg text-xs font-medium transition-colors',
-                isActive ? 'text-accent' : 'text-fg-secondary',
+                active(to, isActive) ? 'text-accent' : 'text-fg-secondary',
               )
             }
           >
             {({ isActive }) => (
               <>
                 <span className="relative flex h-8 w-14 items-center justify-center">
-                  {isActive && (
+                  {active(to, isActive) && (
                     <motion.span
                       layoutId="tab-active"
                       transition={spring.default}

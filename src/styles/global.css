@@ -190,3 +190,22 @@
     radial-gradient(closest-side, var(--accent-glow), transparent 70%),
     radial-gradient(40% 40% at 65% 70%, var(--amber-glow), transparent 70%);
 }
+
+/* Search fields (SearchInput): own clear button instead of the native one. */
+.search-input {
+  appearance: none;
+}
+
+.search-input::-webkit-search-cancel-button,
+.search-input::-webkit-search-decoration {
+  appearance: none;
+  display: none;
+}
+
+/* Knowledge view (src/features/knowledge): soft light behind the entry icon. */
+.knowledge-glow {
+  background:
+    radial-gradient(40% 60% at 12% 30%, var(--accent-glow), transparent 70%),
+    radial-gradient(30% 50% at 90% 80%, var(--amber-soft), transparent 70%);
+  opacity: 0.6;
+}

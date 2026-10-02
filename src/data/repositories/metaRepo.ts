@@ -59,11 +59,16 @@ export const metaRepo = {
    * taken even if creating the customer fails or the customer is deleted later.
    */
   async reserveCustomerSequence(): Promise<number> {
+    return metaRepo.reserveCustomerSequences(1);
+  },
+
+  /** Reserves `count` consecutive numbers at once; returns the first one. */
+  async reserveCustomerSequences(count: number): Promise<number> {
     return db.transaction('rw', db.meta, async () => {
       const entry = await db.meta.get(KEYS.customerSequence);
-      const next = (typeof entry?.value === 'number' ? entry.value : 0) + 1;
-      await db.meta.put({ key: KEYS.customerSequence, value: next });
-      return next;
+      const last = typeof entry?.value === 'number' ? entry.value : 0;
+      await db.meta.put({ key: KEYS.customerSequence, value: last + count });
+      return last + 1;
     });
   },
 

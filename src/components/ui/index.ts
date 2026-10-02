@@ -14,6 +14,7 @@ export { Modal } from './Modal';
 export { PasswordInput } from './PasswordInput';
 export { ProgressBar } from './ProgressBar';
 export { ProgressRing } from './ProgressRing';
+export { SearchInput } from './SearchInput';
 export { Select, type SelectOption } from './Select';
 export { SegmentedControl, type SegmentOption } from './SegmentedControl';
 export { Skeleton } from './Skeleton';

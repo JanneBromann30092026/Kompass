@@ -4,7 +4,7 @@ import { db } from '@/data/db';
 import { useDataStore } from '@/data/store';
 import { hasSessionKey } from '@/services/crypto/session';
 import { useVault, vault } from '@/services/vault';
-import { resetDb } from './testDb';
+import { rawDump, resetDb } from './testDb';
 
 const PASSWORD = 'Kompass-Test-2026!';
 
@@ -14,21 +14,6 @@ async function freshVault() {
   await vault.init(true);
   await vault.setup(PASSWORD);
   vault.finishOpening();
-}
-
-/** Everything stored, as text (byte arrays decoded), to search for plaintext. */
-async function rawDump(): Promise<string> {
-  const parts: string[] = [];
-  for (const table of db.tables) {
-    for (const row of await table.toArray()) {
-      parts.push(
-        JSON.stringify(row, (_key, value: unknown) =>
-          value instanceof Uint8Array ? new TextDecoder('latin1').decode(value) : value,
-        ),
-      );
-    }
-  }
-  return parts.join('\n');
 }
 
 describe('vault', () => {
