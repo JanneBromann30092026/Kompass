@@ -3,6 +3,9 @@ import { searchDocuments } from '@/core/search';
 import { ANSWER_KEYS, LIFE_EVENT_KINDS, LIFE_PHASES, PRODUCT_LINES, TOPICS } from '../domain';
 import { customerSchema } from '../schemas';
 import {
+  BIRTHDAY_GREETINGS,
+  fillGreeting,
+  GREETING_FORMS,
   knowledgeDocuments,
   LIFE_EVENT_INFO,
   LIFE_PHASE_INFO,
@@ -164,5 +167,21 @@ describe('reference data', () => {
       key: 'trainingEnd',
     });
     expect(searchDocuments(docs, 'nachversicherung').map((d) => d.ref.key)).toContain('bu');
+  });
+
+  it('fills birthday greetings (du and Sie), no placeholders left', () => {
+    for (const form of GREETING_FORMS) {
+      const { subject, text } = BIRTHDAY_GREETINGS[form];
+      expect(subject.length).toBeGreaterThan(0);
+      const filled = fillGreeting(text, { firstName: 'Ben', lastName: 'Hartmann' });
+      expect(filled).not.toMatch(/[{}]/);
+    }
+    expect(fillGreeting(BIRTHDAY_GREETINGS.du.text, { firstName: 'Ben' })).toMatch(/^Hallo Ben,/);
+    expect(
+      fillGreeting(BIRTHDAY_GREETINGS.sie.text, { firstName: 'Ben', lastName: 'Hartmann' }),
+    ).toMatch(/^Guten Tag Ben Hartmann,/);
+    expect(fillGreeting(BIRTHDAY_GREETINGS.sie.text, { firstName: 'Ben' })).toMatch(
+      /^Guten Tag Ben,/,
+    );
   });
 });

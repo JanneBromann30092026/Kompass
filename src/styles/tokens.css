@@ -33,6 +33,11 @@
   --amber-fg: #8a5b00;
   --amber-soft: rgba(224, 154, 11, 0.16);
   --amber-glow: rgba(224, 154, 11, 0.4);
+  /* Coverage bars: one-hue ramp (validated with the dataviz check) – own contract,
+     via parents, planned/offered. */
+  --chart-concluded: #0b7285;
+  --chart-parents: #3b93a1;
+  --chart-pipeline: #6ab3be;
   --success: #15803d;
   --success-soft: rgba(21, 128, 61, 0.12);
   --success-glow: rgba(21, 128, 61, 0.35);
@@ -75,6 +80,9 @@
   --amber-fg: #f5b326;
   --amber-soft: rgba(245, 179, 38, 0.15);
   --amber-glow: rgba(245, 179, 38, 0.4);
+  --chart-concluded: #3cc4cf;
+  --chart-parents: #2a9aa6;
+  --chart-pipeline: #1f5f6a;
   --success: #4ade80;
   --success-soft: rgba(74, 222, 128, 0.14);
   --success-glow: rgba(74, 222, 128, 0.35);
@@ -115,10 +123,12 @@
     --on-accent: #04191c;
     --amber: #f5b326;
     --on-amber: #1f1400;
-    --on-amber: #1f1400;
     --amber-fg: #f5b326;
     --amber-soft: rgba(245, 179, 38, 0.15);
     --amber-glow: rgba(245, 179, 38, 0.4);
+    --chart-concluded: #3cc4cf;
+    --chart-parents: #2a9aa6;
+    --chart-pipeline: #1f5f6a;
     --success: #4ade80;
     --success-soft: rgba(74, 222, 128, 0.14);
     --success-glow: rgba(74, 222, 128, 0.35);
@@ -169,6 +179,9 @@
   --color-amber-fg: var(--amber-fg);
   --color-amber-soft: var(--amber-soft);
   --color-amber-glow: var(--amber-glow);
+  --color-chart-concluded: var(--chart-concluded);
+  --color-chart-parents: var(--chart-parents);
+  --color-chart-pipeline: var(--chart-pipeline);
   --color-success: var(--success);
   --color-success-soft: var(--success-soft);
   --color-success-glow: var(--success-glow);

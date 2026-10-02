@@ -10,7 +10,7 @@ import {
 } from './age';
 import { consentIssues, hasMarketingConsent } from './consent';
 import { EMPTY_FILTER, activeFilterCount, filterCustomers, matchesQuery } from './list';
-import { normalizePhone, telHref, whatsappHref } from './phone';
+import { mailtoHref, normalizePhone, telHref, whatsappHref } from './phone';
 import {
   isQuestionAnswered,
   mergeOpenPoints,
@@ -89,6 +89,13 @@ describe('phone numbers', () => {
     expect(telHref('+49 151 123 4567')).toBe('tel:+491511234567');
     expect(whatsappHref('+49 151 123 4567')).toBe('https://wa.me/491511234567');
     expect(whatsappHref('1234567')).toBeNull();
+    expect(whatsappHref('+49 151 123 4567', 'Alles Gute & viel Glück!')).toBe(
+      'https://wa.me/491511234567?text=Alles%20Gute%20%26%20viel%20Gl%C3%BCck!',
+    );
+    expect(mailtoHref(' ben@example.com ')).toBe('mailto:ben@example.com');
+    expect(
+      mailtoHref('ben@example.com', { subject: 'Alles Gute', body: 'Hallo Ben,\nviel Glück' }),
+    ).toBe('mailto:ben@example.com?subject=Alles%20Gute&body=Hallo%20Ben%2C%0Aviel%20Gl%C3%BCck');
   });
 });
 
@@ -228,6 +235,10 @@ describe('customer list', () => {
     expect(list({ demo: 'only' })).toEqual(['Finn']);
     expect(list({ demo: 'hide' })).toEqual(['Emma', 'Ben']);
     expect(activeFilterCount({ ...EMPTY_FILTER, minors: true, lifePhases: ['school'] })).toBe(2);
+    const selection = { label: 'BU: Bedarf ohne Vertrag', ids: [ben.id, emma.id] };
+    expect(list({ selection })).toEqual(['Emma', 'Ben']);
+    expect(list({ selection, lifePhases: ['training'] })).toEqual(['Ben']);
+    expect(activeFilterCount({ ...EMPTY_FILTER, selection })).toBe(1);
   });
 
   it('sorts', () => {

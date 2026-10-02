@@ -1,6 +1,9 @@
 import type { Page } from '@playwright/test';
 import { TEST_PASSWORD } from './ipad.ts';
 
+/** Heading of the start page (greeting by the time of day). */
+export const START_HEADING = /^(Guten Morgen|Hallo|Guten Abend)$/;
+
 export const nav = (page: Page) => page.getByRole('navigation', { name: 'Hauptnavigation' });
 
 /** Waits until the app is open and the lock screen has faded out. */

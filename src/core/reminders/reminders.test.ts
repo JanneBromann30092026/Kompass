@@ -209,14 +209,21 @@ describe('deriveReminders', () => {
       customer: customer({ trainingStart: '2026-08' }),
       lifeEvents: [
         event('childBirth', '2025-05'), // more than 6 months ago
-        event('move', '2026-07'), // 3 months ago: still created (overdue)
+        event('move', '2026-07'), // already happened: no reminder (the need engine has it)
         event('parentalLeaveEnd', '2026-09'), // passed: preparing makes no sense
+        event('jobChange', '2026-10'), // this month: still ahead
+        event('childBirth', '2026-09-30'), // yesterday
       ],
     });
     const creatable = (kind: LifeEventKind) => candidates.find((c) => c.event === kind)?.creatable;
     expect(creatable('childBirth')).toBe(false);
-    expect(creatable('move')).toBe(true);
+    expect(creatable('move')).toBe(false);
     expect(creatable('parentalLeaveEnd')).toBe(false);
+    expect(creatable('jobChange')).toBe(true);
+    expect(candidates.filter((c) => c.event === 'childBirth').map((c) => c.creatable)).toEqual([
+      false,
+      false,
+    ]);
     expect(creatable('trainingStart')).toBe(false);
   });
 
@@ -340,13 +347,12 @@ describe('demo customers', () => {
         '18. Geburtstag 2027-01-01 ?',
         'Ausbildungsbeginn 2027-06-01',
         'Ausbildungsende 2030-11-01',
-        'Führerschein 2026-07-01',
       ],
       Greta: ['Gesprächstermin 2026-10-20'],
-      Hannes: ['Ausbildungsende 2026-11-01', 'Umzug 2026-09-01'],
+      Hannes: ['Ausbildungsende 2026-11-01'],
       Ilka: [],
       Jonas: ['Studienende 2026-12-01'],
-      Kaya: ['Heirat 2027-02-01', 'Umzug 2026-07-01'],
+      Kaya: ['Heirat 2027-02-01'],
       Lars: ['Jahresende 2026-11-30'],
     });
     // Every test customer has exactly one open annual review.

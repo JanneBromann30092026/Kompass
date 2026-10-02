@@ -40,12 +40,19 @@ export function telHref(phone: string): string {
   return `tel:${phoneDial(phone)}`;
 }
 
-/** WhatsApp click-to-chat needs the international number without "+" (null if unknown). */
-export function whatsappHref(phone: string): string | null {
+/**
+ * WhatsApp click-to-chat needs the international number without "+" (null if unknown); an
+ * optional text is prefilled (the user still sends it).
+ */
+export function whatsappHref(phone: string, text?: string): string | null {
   if (!isInternationalPhone(phone)) return null;
-  return `https://wa.me/${phoneDial(phone).slice(1)}`;
+  const base = `https://wa.me/${phoneDial(phone).slice(1)}`;
+  return text ? `${base}?text=${encodeURIComponent(text)}` : base;
 }
 
-export function mailtoHref(email: string): string {
-  return `mailto:${email.trim()}`;
+/** mailto link, optionally with a prefilled subject and body. */
+export function mailtoHref(email: string, message?: { subject: string; body: string }): string {
+  const base = `mailto:${email.trim()}`;
+  if (!message) return base;
+  return `${base}?subject=${encodeURIComponent(message.subject)}&body=${encodeURIComponent(message.body)}`;
 }

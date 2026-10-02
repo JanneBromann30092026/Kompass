@@ -215,6 +215,25 @@ async function openCustomer(page: Page, name: string) {
 
 const customersList = ensureDemo;
 
+async function dashboardDemo(page: Page) {
+  await ensureDemo(page);
+  await page.goto(`${PREVIEW_URL}#/dashboard`);
+  await page.getByTestId('dashboard-metrics').waitFor();
+}
+
+async function dashboardGreeting(page: Page) {
+  await dashboardDemo(page);
+  await page.getByTestId('birthday-greet').first().click();
+  await page.getByTestId('greeting-dialog').waitFor();
+}
+
+async function dashboardCoverageMenu(page: Page) {
+  await dashboardDemo(page);
+  await scrollToTestId(page, 'dashboard-coverage', 'center');
+  await page.getByTestId('coverage-row').first().click();
+  await page.getByRole('menuitem').first().waitFor();
+}
+
 async function customersFilter(page: Page) {
   await ensureDemo(page);
   await page.getByTestId('open-filters').click();
@@ -500,8 +519,18 @@ const SHOTS: Shot[] = [
   { route: '/settings', name: 'settings-security', prepare: settingsSecurity },
   { route: '/settings', name: 'settings-password', prepare: changePassword },
   { route: '/dev/ui', name: 'dev-ui', prepare: enableDevMode, scroll: true },
+  { route: '/dashboard', name: 'dashboard-empty-dev' },
   { route: '/dev/ui', name: 'dev-vault', prepare: devVault },
   { route: '/dev/ui', name: 'dev-demo', prepare: devDemo },
+  {
+    route: '/customers',
+    name: 'dashboard-demo',
+    prepare: dashboardDemo,
+    scroll: true,
+    split: true,
+  },
+  { route: '/customers', name: 'dashboard-greeting', prepare: dashboardGreeting },
+  { route: '/customers', name: 'dashboard-coverage-menu', prepare: dashboardCoverageMenu },
   {
     route: '/customers',
     name: 'customers-list',

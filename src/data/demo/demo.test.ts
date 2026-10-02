@@ -69,14 +69,21 @@ describe('demo customers', () => {
       if (original.customer.birthDate) {
         expect(build.customer.birthDate).toBe(addDays(original.customer.birthDate, days));
       }
-      expect(build.reminders).toHaveLength(original.reminders.length);
       const explicit = DEMO_CUSTOMERS[index]!.reminders.length;
-      build.reminders.forEach((reminder, i) => {
-        const expected = addDays(original.reminders[i]!.dueDate, days);
-        if (i < explicit) expect(reminder.dueDate).toBe(expected);
-        // Derived reminders fall on the first of a month (or 1 January).
-        else expect(Math.abs(daysBetween(expected, reminder.dueDate))).toBeLessThanOrEqual(366);
+      build.reminders.slice(0, explicit).forEach((reminder, i) => {
+        expect(reminder.dueDate).toBe(addDays(original.reminders[i]!.dueDate, days));
       });
+      // Derived reminders fall on the first of a month (or 1 January). Event reminders may
+      // differ: a month-only event date ("2026-09") counts as passed only after its month.
+      for (const derived of original.reminders.slice(explicit)) {
+        if (derived.kind === 'lifeEvent') continue;
+        const expected = addDays(derived.dueDate, days);
+        const match = build.reminders
+          .slice(explicit)
+          .find((reminder) => reminder.kind === derived.kind);
+        expect(match, derived.kind).toBeDefined();
+        expect(Math.abs(daysBetween(expected, match!.dueDate))).toBeLessThanOrEqual(366);
+      }
     });
   });
 

@@ -69,12 +69,16 @@ function eventDueDate(source: DatedSource): string | undefined {
   }
 }
 
+/** The event lies in the past (a month-only date counts until the end of its month). */
+function hasPassed(date: string, today: string): boolean {
+  return date.length === 7 ? dayOf(date) < firstOfMonth(today) : date < today;
+}
+
 function creatableEvent(source: DatedSource, due: string, today: string): boolean {
   const rule = LIFE_EVENT_INFO[source.kind].reminder;
-  // Preparing for an event makes no sense once it has passed.
-  if (rule.anchor === 'eventDate' && rule.offsetMonths < 0 && source.date) {
-    return dayOf(source.date) >= firstOfMonth(today);
-  }
+  // A reminder for an event that has already happened is pointless (the need engine still
+  // picks up recent events); "immediately" rules are due when the event becomes known.
+  if (rule.anchor === 'eventDate' && source.date) return !hasPassed(source.date, today);
   return due >= addMonths(today, -STALE_MONTHS);
 }
 

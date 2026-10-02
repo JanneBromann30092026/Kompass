@@ -1,6 +1,14 @@
 import { expect, test, type Page } from '@playwright/test';
 import { TEST_PASSWORD } from './ipad.ts';
-import { enableDevMode, nav, openApp, setupVault, storageDump, unlock } from './vault.ts';
+import {
+  enableDevMode,
+  nav,
+  openApp,
+  setupVault,
+  START_HEADING,
+  storageDump,
+  unlock,
+} from './vault.ts';
 
 const lockScreen = (page: Page) => page.getByTestId('lock-screen');
 
@@ -77,7 +85,7 @@ test('first start asks for a password and validates the form', async ({ page }) 
   await page.getByRole('switch', { name: /Verstanden/ }).click();
   await submit.click();
   await expect(nav(page)).toBeVisible();
-  await expect(page.getByRole('heading', { level: 1, name: 'Start' })).toBeVisible();
+  await expect(page.getByRole('heading', { level: 1, name: START_HEADING })).toBeVisible();
 });
 
 test('locks, refuses a wrong password with a short wait and unlocks', async ({ page }) => {
@@ -110,7 +118,7 @@ test('locks, refuses a wrong password with a short wait and unlocks', async ({ p
 test('locks automatically after five minutes without input', async ({ page }) => {
   await installTimeTravel(page);
   await openApp(page);
-  await expect(page.getByRole('heading', { level: 1, name: 'Start' })).toBeVisible();
+  await expect(page.getByRole('heading', { level: 1, name: START_HEADING })).toBeVisible();
 
   await advance(page, 4 * 60_000);
   await page.waitForTimeout(5_500);

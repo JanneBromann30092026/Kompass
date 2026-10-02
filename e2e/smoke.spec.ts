@@ -1,5 +1,13 @@
 import { expect, test, type Page } from '@playwright/test';
-import { enableDevMode, nav, openApp, reloadAndUnlock, storageDump, unlock } from './vault.ts';
+import {
+  enableDevMode,
+  nav,
+  openApp,
+  reloadAndUnlock,
+  START_HEADING,
+  storageDump,
+  unlock,
+} from './vault.ts';
 
 function collectConsoleProblems(page: Page): string[] {
   const problems: string[] = [];
@@ -17,8 +25,8 @@ test('app shell loads without console errors or warnings', async ({ page }) => {
   await openApp(page);
 
   await expect(page).toHaveURL(/#\/dashboard$/);
-  await expect(page.getByRole('heading', { level: 1, name: 'Start' })).toBeVisible();
-  await expect(page.getByText('Kommt in Schritt 8')).toBeVisible();
+  await expect(page.getByRole('heading', { level: 1, name: START_HEADING })).toBeVisible();
+  await expect(page.getByText('Willkommen bei Kompass')).toBeVisible();
   await expect(nav(page)).toBeVisible();
   await expect(page.locator('meta[http-equiv="Content-Security-Policy"]')).toHaveCount(1);
   await expect(page).toHaveTitle('Kompass');
@@ -56,11 +64,13 @@ test('navigation switches pages', async ({ page }) => {
     ['Aktionen', 'Kommt in Schritt 9'],
     ['Netz', 'Kommt in Schritt 11'],
     ['Einstellungen', 'Darstellung'],
-    ['Start', 'Kommt in Schritt 8'],
+    ['Start', 'Willkommen bei Kompass'],
   ] as const;
   for (const [name, text] of pages) {
     await nav(page).getByRole('link', { name }).click();
-    await expect(page.getByRole('heading', { level: 1, name })).toBeVisible();
+    await expect(
+      page.getByRole('heading', { level: 1, name: name === 'Start' ? START_HEADING : name }),
+    ).toBeVisible();
     await expect(page.getByText(text, { exact: true })).toBeVisible();
   }
   await expect(nav(page).getByRole('link', { name: 'Entwickler' })).toHaveCount(0);
@@ -171,7 +181,7 @@ test('developer mode shows the component overview and the focus mode', async ({ 
 
 test('keyboard shortcut overview opens with ?', async ({ page }) => {
   await openApp(page);
-  await expect(page.getByRole('heading', { level: 1, name: 'Start' })).toBeVisible();
+  await expect(page.getByRole('heading', { level: 1, name: START_HEADING })).toBeVisible();
   await page.keyboard.press('Shift+?');
   await expect(page.getByRole('dialog', { name: 'Tastaturkürzel' })).toBeVisible();
   await page.keyboard.press('Escape');
@@ -222,7 +232,7 @@ test('app works offline after the service worker is installed', async ({ page, c
   await context.setOffline(true);
   // Unlocking works offline: the key is derived on the device.
   await reloadAndUnlock(page);
-  await expect(page.getByRole('heading', { level: 1, name: 'Start' })).toBeVisible();
+  await expect(page.getByRole('heading', { level: 1, name: START_HEADING })).toBeVisible();
   await nav(page).getByRole('link', { name: 'Kunden' }).click();
   await expect(page.getByRole('heading', { level: 1, name: 'Kunden' })).toBeVisible();
   await page.goto('./#/settings');
