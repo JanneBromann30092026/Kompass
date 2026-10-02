@@ -101,7 +101,9 @@ export function valueText(entity: HistoryEntity, path: string, value: unknown): 
             ? lookup(LIFE_EVENT_INFO)
             : head === 'kind' && entity === 'reminder'
               ? lookup(REMINDER_KIND_LABELS)
-              : undefined;
+              : head === 'event' && entity === 'reminder'
+                ? lookup(LIFE_EVENT_INFO)
+                : undefined;
   if (named) return named;
   const labels = ENUM_LABELS[leaf] ?? ENUM_LABELS[head];
   if (labels?.[text]) return labels[text];

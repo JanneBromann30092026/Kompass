@@ -7,6 +7,8 @@ import { cn } from './cn';
 import { useToasts, type ToastItem } from './toastStore';
 
 const AUTO_DISMISS_MS = { info: 4000, success: 3000, error: 6000 } as const;
+/** Time to reach an action such as "Rückgängig". */
+const ACTION_DISMISS_MS = 6000;
 
 const TONES = {
   info: { icon: Info, className: 'text-accent' },
@@ -36,9 +38,10 @@ function Toast({ item }: { item: ToastItem }) {
   const { icon: Icon, className } = TONES[item.tone];
 
   useEffect(() => {
-    const timer = setTimeout(() => dismiss(item.id), AUTO_DISMISS_MS[item.tone]);
+    const delay = item.action ? ACTION_DISMISS_MS : AUTO_DISMISS_MS[item.tone];
+    const timer = setTimeout(() => dismiss(item.id), delay);
     return () => clearTimeout(timer);
-  }, [dismiss, item.id, item.tone]);
+  }, [dismiss, item.id, item.tone, item.action]);
 
   return (
     <motion.div
@@ -52,6 +55,19 @@ function Toast({ item }: { item: ToastItem }) {
     >
       <Icon size={20} aria-hidden className={cn('shrink-0', className)} />
       <span className="text-base font-medium text-fg">{item.message}</span>
+      {item.action && (
+        <button
+          type="button"
+          onClick={() => {
+            item.action?.onSelect();
+            dismiss(item.id);
+          }}
+          className="focus-ring min-h-11 shrink-0 rounded-full px-3 text-base font-semibold text-accent"
+          data-testid="toast-action"
+        >
+          {item.action.label}
+        </button>
+      )}
       <button
         type="button"
         aria-label={de.ui.dismiss}

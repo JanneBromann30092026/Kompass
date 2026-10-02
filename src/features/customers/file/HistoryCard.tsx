@@ -14,8 +14,8 @@ const t = de.customers.file;
 const VISIBLE = 5;
 const SUMMARY_FIELDS = 3;
 
-/** Internal fields that mean nothing to the reader (fingerprint of a need suggestion). */
-const HIDDEN_PATHS = new Set(['basis']);
+/** Internal fields that mean nothing to the reader (need fingerprint, reminder rule key). */
+const HIDDEN_PATHS = new Set(['basis', 'ruleKey']);
 
 /** Values that say nothing when a record is created ("Erledigt: nein", empty lists). */
 const isBlank = (value: unknown) =>
@@ -46,6 +46,11 @@ function Entry({ entry }: { entry: HistoryEntry }) {
     .filter((change) => entry.action === 'updated' || !isBlank(change.to ?? change.from))
     .map((change) => describeChange(entry.entity, change));
   const names = [...new Set(changes.map((c) => c.label))];
+  // Reminders created or removed by the rules (src/core/reminders) carry their rule key.
+  const automatic =
+    entry.entity === 'reminder' &&
+    entry.action !== 'updated' &&
+    entry.changes.some((change) => change.path === 'ruleKey');
   const summary = summaryOf(entry, names);
   return (
     <li className="py-1" data-testid="history-entry">
@@ -58,6 +63,7 @@ function Entry({ entry }: { entry: HistoryEntry }) {
         <span className="flex min-w-0 flex-1 flex-col">
           <span className="text-base font-medium text-fg">
             {t.historyEntities[entry.entity]} {t.historyActions[entry.action]}
+            {automatic && ` (${t.historyAutomatic})`}
             <span className="ml-2 text-sm font-normal text-fg-muted">
               {formatDateTime(entry.updatedAt)}
             </span>

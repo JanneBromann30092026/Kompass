@@ -36,7 +36,6 @@ export interface ReminderFacts {
 
 /** A date "JJJJ-MM-TT" for "JJJJ-MM" (1st of the month) or an exact date. */
 const dayOf = (date: string) => (date.length === 7 ? `${date}-01` : date);
-const latest = (dates: readonly string[]) => [...dates].sort().at(-1);
 
 function talkingPoints(kind: LifeEventKind): string {
   return LIFE_EVENT_INFO[kind].talkingPoints.join(', ');
@@ -112,7 +111,7 @@ export function deriveReminders(facts: ReminderFacts, today: string): ReminderCa
     .filter((event) => !sameAsField(event))
     .filter((event) => !(event.kind === 'eighteenthBirthday' && birthday))
     .map((event) => ({
-      key: `event:${event.id}`,
+      key: `event:${event.id}:${event.kind}`,
       kind: event.kind,
       date: event.date,
       known: localIsoDate(new Date(event.createdAt)),
@@ -151,20 +150,26 @@ export function deriveReminders(facts: ReminderFacts, today: string): ReminderCa
   }
 
   // Annual review: 12 months after the last contact (conversation, completed annual review
-  // or the first contact). Always created – an overdue review is still due.
+  // or the first contact). Always created – an overdue review is still due. The key names
+  // the kind of contact, so completing a review on the day of the previous contact still
+  // yields a new key (and thus the next review).
   const rule = LIFE_EVENT_INFO.annualReview.reminder;
   const months = rule.anchor === 'lastConversation' ? rule.offsetMonths : 12;
-  const lastContact = latest([
-    localIsoDate(new Date(customer.createdAt)),
-    ...conversations.map((conversation) => conversation.date),
+  const contacts = [
+    { date: localIsoDate(new Date(customer.createdAt)), source: 'contact' },
+    ...conversations.map((conversation) => ({ date: conversation.date, source: 'contact' })),
     ...reminders
       .filter((reminder) => reminder.kind === 'annualReview' && reminder.done && reminder.doneAt)
-      .map((reminder) => localIsoDate(new Date(reminder.doneAt ?? ''))),
-  ]);
+      .map((reminder) => ({
+        date: localIsoDate(new Date(reminder.doneAt ?? '')),
+        source: 'review',
+      })),
+  ].sort((a, b) => a.date.localeCompare(b.date) || a.source.localeCompare(b.source));
+  const lastContact = contacts.at(-1);
   if (lastContact) {
-    const due = addMonths(lastContact, months);
+    const due = addMonths(lastContact.date, months);
     result.push({
-      ruleKey: `annualReview:${due}`,
+      ruleKey: `annualReview:${lastContact.source}:${due}`,
       kind: 'annualReview',
       dueDate: due,
       title: LIFE_EVENT_INFO.annualReview.name,

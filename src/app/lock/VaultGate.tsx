@@ -1,4 +1,5 @@
 import { AnimatePresence, motion } from 'motion/react';
+import { useReminderSync } from '@/features/reminders/useReminders';
 import { useSettings } from '@/features/settings/settingsStore';
 import { useVault } from '@/services/vault';
 import { easeOut } from '@/styles/motion';
@@ -8,6 +9,7 @@ import { useAutoLock } from './useAutoLock';
 
 function UnlockedApp() {
   useAutoLock(useSettings((s) => s.lockAfterMinutes));
+  useReminderSync();
   return <Shell />;
 }
 

@@ -2,10 +2,12 @@ import { NavLink } from 'react-router';
 import { motion } from 'motion/react';
 import { Lock, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import { cn, IconButton, Tooltip } from '@/components/ui';
+import { useDueCount } from '@/features/reminders/useReminders';
 import { useSettings } from '@/features/settings/settingsStore';
 import { de } from '@/i18n/de';
 import { vault } from '@/services/vault';
 import { spring } from '@/styles/motion';
+import { NavBadge, NavBadgeText } from './NavBadge';
 import { knowledgeItem, navItems, type NavItem } from './navItems';
 
 const EXPANDED_WIDTH = 264;
@@ -33,12 +35,16 @@ const itemClass = (isActive: boolean, collapsed: boolean) =>
 
 function SidebarLink({ item, collapsed }: { item: NavItem; collapsed: boolean }) {
   const { to, label, icon: Icon } = item;
+  const due = useDueCount();
+  // Collapsed, the label replaces the content: it names the due reminders itself.
+  const collapsedLabel =
+    to === '/reminders' && due > 0 ? `${label}, ${de.reminders.dueCount(due)}` : label;
   return (
     <MaybeTooltip show={collapsed} content={label}>
       <NavLink
         to={to}
         className={({ isActive }) => cn(itemClass(isActive, collapsed), 'w-full')}
-        aria-label={collapsed ? label : undefined}
+        aria-label={collapsed ? collapsedLabel : undefined}
       >
         {({ isActive }) => (
           <>
@@ -50,7 +56,9 @@ function SidebarLink({ item, collapsed }: { item: NavItem; collapsed: boolean })
               />
             )}
             <Icon size={22} aria-hidden className="relative shrink-0" />
-            {!collapsed && <span className="relative truncate">{label}</span>}
+            {!collapsed && <span className="relative flex-1 truncate">{label}</span>}
+            <NavBadge to={to} className={collapsed ? 'absolute top-0 right-2' : 'relative'} />
+            {!collapsed && <NavBadgeText to={to} />}
           </>
         )}
       </NavLink>

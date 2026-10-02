@@ -29,6 +29,7 @@
   --accent-glow: rgba(11, 114, 133, 0.35);
   --on-accent: #ffffff;
   --amber: #e09a0b;
+  --on-amber: #1f1400;
   --amber-fg: #8a5b00;
   --amber-soft: rgba(224, 154, 11, 0.16);
   --amber-glow: rgba(224, 154, 11, 0.4);
@@ -70,6 +71,7 @@
   --accent-glow: rgba(60, 196, 207, 0.4);
   --on-accent: #04191c;
   --amber: #f5b326;
+  --on-amber: #1f1400;
   --amber-fg: #f5b326;
   --amber-soft: rgba(245, 179, 38, 0.15);
   --amber-glow: rgba(245, 179, 38, 0.4);
@@ -112,6 +114,8 @@
     --accent-glow: rgba(60, 196, 207, 0.4);
     --on-accent: #04191c;
     --amber: #f5b326;
+    --on-amber: #1f1400;
+    --on-amber: #1f1400;
     --amber-fg: #f5b326;
     --amber-soft: rgba(245, 179, 38, 0.15);
     --amber-glow: rgba(245, 179, 38, 0.4);
@@ -161,6 +165,7 @@
   --color-accent-glow: var(--accent-glow);
   --color-on-accent: var(--on-accent);
   --color-amber: var(--amber);
+  --color-on-amber: var(--on-amber);
   --color-amber-fg: var(--amber-fg);
   --color-amber-soft: var(--amber-soft);
   --color-amber-glow: var(--amber-glow);

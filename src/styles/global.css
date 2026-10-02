@@ -210,8 +210,8 @@
   opacity: 0.6;
 }
 
-/* Need accepted (src/features/needs): short success light over the card. */
-.need-glow {
+/* Success moments (need accepted, reminder completed): short light over the card. */
+.success-glow {
   background: radial-gradient(70% 90% at 15% 20%, var(--success-glow), transparent 70%);
   box-shadow: inset 0 0 0 2px var(--success);
 }

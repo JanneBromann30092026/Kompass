@@ -11,6 +11,12 @@ export { customersRepo } from './customersRepo';
 export { draftsRepo, NEW_CUSTOMER_DRAFT_ID } from './draftsRepo';
 export { metaRepo, VaultExistsError } from './metaRepo';
 export { needDecisionsRepo, type NeedAdjustment } from './needDecisionsRepo';
+export {
+  AutomaticReminderError,
+  reminderActionsRepo,
+  type Completion,
+  type ManualReminder,
+} from './reminderActionsRepo';
 export { settingsRepo } from './settingsRepo';
 
 export const needsRepo = createLinkedRepo('needs', needInputSchema);

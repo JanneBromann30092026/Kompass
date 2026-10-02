@@ -4,7 +4,9 @@ import { CalendarClock, ChevronRight } from 'lucide-react';
 import { cn } from '@/components/ui';
 import { ageInfo } from '@/core/customers/age';
 import { LIFE_PHASE_INFO } from '@/data/reference';
-import type { Customer } from '@/data/schemas';
+import { reminderBucket } from '@/core/reminders/schedule';
+import type { Customer, Reminder } from '@/data/schemas';
+import { dueLabel } from '@/features/reminders/useReminders';
 import { de } from '@/i18n/de';
 import { customerName } from '../labels';
 import { CustomerAvatar } from './CustomerAvatar';
@@ -12,13 +14,55 @@ import { CustomerBadges } from './CustomerBadges';
 
 const t = de.customers;
 
+const TONES = {
+  overdue: 'text-warning',
+  today: 'text-amber-fg',
+  next30: 'text-fg-secondary',
+  next90: 'text-fg-muted',
+  later: 'text-fg-muted',
+} as const;
+
+/** Next reminder: relative date, tinted when due; the occasion on wide screens. */
+function NextReminder({ reminder, today }: { reminder?: Reminder; today: string }) {
+  if (!reminder) {
+    return (
+      <span
+        className="hidden shrink-0 items-center gap-1.5 text-sm text-fg-muted wide:flex"
+        aria-label={`${t.nextReminder}: ${t.nextReminderNone}`}
+      >
+        <CalendarClock size={16} aria-hidden />–
+      </span>
+    );
+  }
+  const label = dueLabel(reminder.dueDate, today);
+  return (
+    <span
+      className={cn(
+        'flex shrink-0 flex-col items-end text-right text-sm',
+        TONES[reminderBucket(reminder.dueDate, today)],
+      )}
+      aria-label={`${t.nextReminder}: ${reminder.title}, ${label}`}
+      data-testid="customer-next-reminder"
+    >
+      <span className="flex items-center gap-1.5 font-medium">
+        <CalendarClock size={16} aria-hidden />
+        {label}
+      </span>
+      <span className="hidden max-w-40 truncate text-fg-muted wide:block">{reminder.title}</span>
+    </span>
+  );
+}
+
 /** One customer in the list: number, name, age, phase, hints; tap opens the file. */
 export const CustomerRow = memo(function CustomerRow({
   customer,
   today,
+  next,
 }: {
   customer: Customer;
   today: string;
+  /** Earliest open reminder. */
+  next?: Reminder;
 }) {
   const { age, approximate } = ageInfo(customer, today);
   const facts = [
@@ -55,14 +99,7 @@ export const CustomerRow = memo(function CustomerRow({
             className="mt-1 flex flex-wrap gap-1.5"
           />
         </span>
-        {/* Next reminder: filled in step 6. */}
-        <span
-          className="hidden shrink-0 items-center gap-1.5 text-sm text-fg-muted wide:flex"
-          title={t.nextReminderSoon}
-          aria-label={`${t.nextReminder}: ${t.nextReminderSoon}`}
-        >
-          <CalendarClock size={16} aria-hidden />–
-        </span>
+        <NextReminder reminder={next} today={today} />
         <ChevronRight size={18} aria-hidden className="shrink-0 text-fg-muted" />
       </Link>
     </li>

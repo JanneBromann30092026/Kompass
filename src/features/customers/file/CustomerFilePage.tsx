@@ -6,7 +6,6 @@ import {
   ArchiveRestore,
   ArrowLeft,
   Briefcase,
-  CalendarClock,
   ClipboardList,
   Contact,
   HandCoins,
@@ -47,6 +46,7 @@ import {
 import type { Customer } from '@/data/schemas';
 import { useDataStore } from '@/data/store';
 import { HooksSection, NeedsSection, useCustomerNeeds } from '@/features/needs';
+import { RemindersSection } from '@/features/reminders/RemindersSection';
 import { de } from '@/i18n/de';
 import { spring } from '@/styles/motion';
 import { CustomerAvatar } from '../components/CustomerAvatar';
@@ -273,6 +273,7 @@ function FileContent({ customer }: { customer: Customer }) {
         )}
 
         <Hero customer={customer} today={today} onEdit={edit('person')} />
+        <RemindersSection customer={customer} today={today} />
         <ContractsCard customer={customer} />
         <NeedsSection customer={customer} views={views} />
         <HooksSection hooks={hooks} />
@@ -445,20 +446,12 @@ function FileContent({ customer }: { customer: Customer }) {
           )}
         </FileSection>
 
-        <div className="grid gap-4 wide:grid-cols-2">
-          <LaterSection
-            title={s.reminders}
-            icon={CalendarClock}
-            text={t.file.comingSoon.reminders}
-            step={6}
-          />
-          <LaterSection
-            title={s.conversations}
-            icon={MessagesSquare}
-            text={t.file.comingSoon.conversations}
-            step={7}
-          />
-        </div>
+        <LaterSection
+          title={s.conversations}
+          icon={MessagesSquare}
+          text={t.file.comingSoon.conversations}
+          step={7}
+        />
 
         <HistoryCard customerId={customer.id} />
       </motion.div>
