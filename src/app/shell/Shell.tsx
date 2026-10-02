@@ -27,6 +27,9 @@ const KnowledgeDetailPage = lazy(() =>
 const PrioritiesPage = lazy(() => knowledge().then((m) => ({ default: m.PrioritiesPage })));
 const QuestionnairePage = lazy(() => knowledge().then((m) => ({ default: m.QuestionnairePage })));
 
+const DashboardPage = lazy(() =>
+  import('@/features/dashboard').then((m) => ({ default: m.DashboardPage })),
+);
 // Customers: list, file and the question catalogue share a chunk.
 const RemindersPage = lazy(() =>
   import('@/features/reminders').then((m) => ({ default: m.RemindersPage })),
@@ -75,7 +78,7 @@ function AnimatedRoutes() {
         >
           <Routes location={location}>
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
-            <Route path="/dashboard" element={<ComingSoonPage page="dashboard" />} />
+            <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/customers" element={<CustomersPage />} />
             <Route path="/customers/new" element={<NewCustomerPage />} />
             <Route path="/customers/:id" element={<CustomerFilePage />} />

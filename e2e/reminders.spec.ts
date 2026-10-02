@@ -133,7 +133,7 @@ test('postpone by week, month and date', async ({ page }) => {
   await openApp(page);
   await loadDemo(page);
   await openReminders(page);
-  const row = openRow(page, 'Kaya');
+  const row = openRow(page, 'Ilka');
   const id = await row.getAttribute('data-reminder-id');
   const byId = page.locator(`[data-reminder-id="${id}"]`);
 
@@ -228,7 +228,7 @@ test('calendar export is pseudonymised (.ics)', async ({ page }) => {
   await loadDemo(page);
   await openReminders(page);
   await page.getByTestId('reminders-export').click();
-  await expect(page.getByTestId('calendar-preview')).toContainText('K-0006 · Führerschein');
+  await expect(page.getByTestId('calendar-preview')).toContainText('K-0009 · Jahresgespräch');
   const [download] = await Promise.all([
     page.waitForEvent('download'),
     page.getByTestId('calendar-download').click(),
@@ -268,6 +268,6 @@ test('calendar export uses the share sheet when available', async ({ page }) => 
   const read = () => page.evaluate(() => (window as unknown as { __shared: string[] }).__shared);
   await expect.poll(async () => (await read()).length).toBe(1);
   const shared = await read();
-  expect(shared[0]).toContain('SUMMARY:K-0006 · Führerschein');
+  expect(shared[0]).toContain('SUMMARY:K-0002 · Führerschein');
   expect(shared[0]?.match(/BEGIN:VEVENT/g)).toHaveLength(1);
 });

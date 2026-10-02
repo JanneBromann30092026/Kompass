@@ -1,5 +1,5 @@
 import { motion } from 'motion/react';
-import { House, Megaphone, Waypoints, type LucideIcon } from 'lucide-react';
+import { Megaphone, Waypoints, type LucideIcon } from 'lucide-react';
 import { Badge, Surface } from '@/components/ui';
 import { Page } from '@/app/shell/Page';
 import { de } from '@/i18n/de';
@@ -9,7 +9,6 @@ export type ComingSoonKey = keyof typeof de.comingSoon.pages;
 
 /** Navigation label, icon and roadmap step of every page that is still a placeholder. */
 const PAGES: Record<ComingSoonKey, { title: string; icon: LucideIcon; step: number }> = {
-  dashboard: { title: de.nav.dashboard, icon: House, step: 8 },
   campaigns: { title: de.nav.campaigns, icon: Megaphone, step: 9 },
   network: { title: de.nav.network, icon: Waypoints, step: 11 },
 };

@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { formatBytes, formatCalendarDate, formatDateTime, formatMoney } from './format';
+import {
+  formatBytes,
+  formatCalendarDate,
+  formatDateTime,
+  formatDayMonth,
+  formatLongDate,
+  formatMoney,
+  formatPercent,
+} from './format';
 
 describe('formatBytes', () => {
   it('formats bytes without decimals', () => {
@@ -33,6 +41,10 @@ describe('calendar and money formats', () => {
   it('formats dates, months, timestamps and euros', () => {
     expect(formatCalendarDate('2007-10-05')).toBe('05.10.2007');
     expect(formatCalendarDate('2026-08')).toBe('08/2026');
+    expect(formatDayMonth('2026-10-04')).toBe('04.10.');
+    expect(formatLongDate('2026-10-02')).toBe('Freitag, 2. Oktober 2026');
+    expect(formatPercent(5 / 12)).toBe('42\u00a0%');
+    expect(formatPercent(1)).toBe('100\u00a0%');
     expect(formatDateTime('2026-10-02T07:15:00.000Z')).toMatch(/^02\.10\.2026, \d{2}:15$/);
     expect(formatMoney(1200).replace(/\s/g, ' ')).toBe('1.200 €');
   });

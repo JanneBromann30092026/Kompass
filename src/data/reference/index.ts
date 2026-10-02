@@ -19,6 +19,7 @@ import { NEED_RULES } from './needRules';
 import { PRODUCT_LINE_INFO } from './productLines';
 import { TOPIC_INFO } from './topics';
 
+export { BIRTHDAY_GREETINGS, fillGreeting, GREETING_FORMS, type GreetingForm } from './greetings';
 export { HOOK_TEMPLATES } from './hooks';
 export { LIFE_EVENT_INFO } from './lifeEvents';
 export { LIFE_PHASE_INFO } from './lifePhases';

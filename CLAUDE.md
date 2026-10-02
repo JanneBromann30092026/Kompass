@@ -111,7 +111,7 @@ Touch-first (iPad), wie Synapse:
 - [x] 5 Bedarfs-Engine & Gesprächsaufhänger
 - [x] 6 Wiedervorlagen
 - [x] 7 Gespräche & Gesprächsvorbereitung
-- [ ] 8 Dashboard & Pipeline
+- [x] 8 Dashboard & Pipeline
 - [ ] 9 Segmente & Aktionen
 - [ ] 10 Einstellungen & optionale KI
 - [ ] 11 Kunden-Netz
@@ -197,3 +197,11 @@ Touch-first (iPad), wie Synapse:
   - Diktat: Hinweis auf das Mikrofon der iPad-Tastatur; zusätzlich Button über die Web Speech API (src/services/speech/dictation.ts, `SpeechRecognition`/`webkitSpeechRecognition`, de-DE, Zwischentext sichtbar, Endtext wird an das zuletzt gewählte Feld angehängt), nur wenn vorhanden; einmaliger Hinweis „Diktat über Apple“ (Einstellung `dictationNoticeSeen`). Achtung Tests: Chromium bringt selbst eine Spracherkennung mit – Mocks müssen beide Namen setzen bzw. löschen.
   - Schnelle Aktionen im Formular sind die bekannten Karten (Verträge, Wiedervorlagen, Lebensereignisse) plus Einwilligungen (Werbung, bei Minderjährigen Zustimmung der Eltern) – sie speichern sofort mit Verlaufseintrag. Speichern des Gesprächs setzt das letzte Gespräch; der Wiedervorlagen-Abgleich verschiebt dadurch das Jahresgespräch automatisch.
   - Akte: Buttons „Gesprächsvorbereitung“ und „Gespräch erfassen“ im Kopf, Abschnitt „Gespräche“ (neueste zuerst, aufklappbar, Bearbeiten/Löschen). Der Platzhalter `LaterSection` ist entfernt.
+- Schritt 8 (Dashboard & Pipeline):
+  - Kernlogik src/core/dashboard (`buildDashboard`, getestet gegen 00_Dashboard der Kunden-Wissensdatenbank am Stichtag): Kennzahlen (aktive Kunden, Demo, einladbar = `hasMarketingConsent`, minderjährig inkl. „evtl.“, Wiedervorlagen überfällig / fällig heute bis +30 Tage), Abdeckung je Sparte (Quote = abgeschlossen ÷ relevant, ohne „nicht relevant“/„über Eltern“; „Bedarf ohne Vertrag“ = Gruppe „jetzt“ nach Entscheidungen und kein Abschluss, Pipeline eingeschlossen), offene Bedarfe (Prio, dann Potenzial, dann Anzahl, dann Nummer; Top 10), Pipeline je Sparte mit nächster Wiedervorlage, Geburtstage heute/1–7/8–30 Tage mit neuem Alter. Archivierte Kunden zählen nirgends. Abweichung zur Referenz: Kaya rückt wegen „Hausrat anpassen“ (Schritt 5) vor Emma, Hannes wird 11.
+  - **Regeländerung Wiedervorlagen:** Ereignis-Wiedervorlagen mit Anker „Ereignisdatum“ entstehen nur noch, solange das Ereignis nicht vorbei ist (Monatsangabe gilt bis Monatsende) – sonst zeigte die Startseite alte Ereignisse als überfällig (Referenz: 1 überfällig). Schon angelegte offene Wiedervorlagen bleiben bestehen (eine Aufgabe verschwindet nie still); auf dem iPad geladene Demo-Daten also einmal entfernen und neu laden.
+  - Startseite (src/features/dashboard, eigener Lazy-Chunk): Begrüßung nach Tageszeit + langes Datum, „Heute“ (fällige Wiedervorlagen als `ReminderRow`, direkt erledigbar, max. 5; Geburtstage der nächsten 7 Tage, weitere aufklappbar), Kennzahlen-Kacheln, Abdeckung als ruhige gestapelte Balken, offene Bedarfe, Pipeline; leerer Zustand mit „Ersten Kunden anlegen“ bzw. im Entwicklermodus „Demo-Daten laden“ (dynamischer Import von demoRepo).
+  - Alles antippbar: Kacheln → gefilterte Kundenliste bzw. Wiedervorlagen; Abdeckungszeile → Menü mit Segmenten; Prio-Pillen und „weitere Kunden“ → Liste. Neuer Kundenfilter `selection` (feste ID-Auswahl mit Bezeichnung, als entfernbarer Chip) für Gruppen, die sich nicht als Filter ausdrücken lassen (z. B. „BU: Bedarf ohne Vertrag“). `useShowCustomers` setzt Filter und Suche zurück.
+  - Balkenfarben als Tokens `--chart-concluded/-parents/-pipeline` (eine Farbrampe in Petrol, hell und dunkel mit dem dataviz-Validator geprüft); Bedarf ohne Vertrag als Bernstein-Chip, Quote als Text am Zeilenende.
+  - Geburtstagsgruß nur mit Werbeeinwilligung (Minderjährige zusätzlich Eltern), sonst Hinweis „rechtlich prüfen“. Vorlagen Du/Sie als Daten (src/data/reference/greetings.ts), Text editierbar, Versand über `wa.me/…?text=` bzw. `mailto:?subject&body` (nur Links, gesendet wird in der jeweiligen App) oder Kopieren.
+  - Tests: `START_HEADING` (Begrüßung) in e2e/vault.ts statt Überschrift „Start“. Doppelte `--on-amber`-Zeile im dunklen Fallback entfernt.

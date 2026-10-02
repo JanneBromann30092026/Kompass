@@ -25,11 +25,16 @@ interface ActiveFilter {
 /** Removable chips for the active filters. */
 function activeFilters(filter: CustomerFilter): ActiveFilter[] {
   const f = t.filters;
-  const chips: ActiveFilter[] = filter.lifePhases.map((phase) => ({
-    key: `phase-${phase}`,
-    label: LIFE_PHASE_INFO[phase].name,
-    remove: { lifePhases: filter.lifePhases.filter((p) => p !== phase) },
-  }));
+  const chips: ActiveFilter[] = filter.selection
+    ? [{ key: 'selection', label: filter.selection.label, remove: { selection: undefined } }]
+    : [];
+  chips.push(
+    ...filter.lifePhases.map((phase) => ({
+      key: `phase-${phase}`,
+      label: LIFE_PHASE_INFO[phase].name,
+      remove: { lifePhases: filter.lifePhases.filter((p) => p !== phase) },
+    })),
+  );
   if (filter.product) {
     const statuses = filter.product.statuses.map((s) => CONTRACT_STATUS_LABELS[s]).join(', ');
     chips.push({

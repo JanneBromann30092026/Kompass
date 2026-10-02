@@ -65,10 +65,6 @@ export const de = {
   comingSoon: {
     badge: (step: number) => `Kommt in Schritt ${step}`,
     pages: {
-      dashboard: {
-        heading: 'Dein Überblick',
-        text: 'Hier siehst du bald auf einen Blick: Kundenzahl, fällige Wiedervorlagen, Geburtstage, Produktabdeckung je Sparte, offene Bedarfe und deine Pipeline.',
-      },
       campaigns: {
         heading: 'Zielgruppen & Seminare',
         text: 'Segmente filtern, Seminare planen und Einladungslisten erstellen – nur mit Werbeeinwilligung, samt passender Einladungstexte.',
@@ -77,6 +73,114 @@ export const de = {
         heading: 'Dein Kunden-Netz',
         text: 'Eine frei verschiebbare, zoombare Karte: Kunden verbunden mit Produkten, Lebensphasen, Lebensereignissen und Themen.',
       },
+    },
+  },
+  dashboard: {
+    greeting: {
+      morning: 'Guten Morgen',
+      day: 'Hallo',
+      evening: 'Guten Abend',
+    },
+    today: {
+      title: 'Heute',
+      due: 'Fällige Wiedervorlagen',
+      noDue: 'Heute ist nichts fällig.',
+      more: (count: number) => `${count} weitere fällig`,
+      all: 'Alle Wiedervorlagen',
+      birthdays: 'Geburtstage',
+      noBirthdays: 'Keine Geburtstage in den nächsten 7 Tagen.',
+      laterBirthdays: (count: number) =>
+        count === 1
+          ? '1 weiterer in den nächsten 30 Tagen'
+          : `${count} weitere in den nächsten 30 Tagen`,
+    },
+    birthday: {
+      today: 'heute',
+      tomorrow: 'morgen',
+      inDays: (days: number) => `in ${days} Tagen`,
+      turns: (age: number) => `wird ${age}`,
+      greet: 'Gratulieren',
+      greetLabel: (name: string) => `${name} gratulieren`,
+      noConsent: 'Ohne Werbeeinwilligung keine Glückwünsche (rechtlich prüfen).',
+    },
+    greetingDialog: {
+      title: (name: string) => `Glückwunsch an ${name}`,
+      form: 'Anrede',
+      forms: { du: 'Du', sie: 'Sie' },
+      text: 'Text',
+      hint: 'Geburtstagsgrüße gelten als Werbung – die Einwilligung liegt vor. Der Text öffnet sich in WhatsApp oder E-Mail; gesendet wird erst dort.',
+      whatsapp: 'WhatsApp',
+      email: 'E-Mail',
+      copy: 'Kopieren',
+      copied: 'Text kopiert',
+      copyFailed: 'Kopieren nicht möglich',
+      noChannel:
+        'Keine Telefonnummer mit Ländervorwahl oder E-Mail hinterlegt – Text kopieren und selbst senden.',
+      close: 'Schließen',
+    },
+    metrics: {
+      title: 'Kennzahlen',
+      customers: 'Kunden',
+      demo: (count: number) => `davon ${count} Demo`,
+      invitable: 'Einladbar',
+      invitableHint: 'mit Werbeeinwilligung',
+      minors: 'Minderjährig',
+      minorsHint: 'Eltern stimmen zu',
+      overdue: 'Überfällig',
+      overdueHint: 'Wiedervorlagen',
+      dueSoon: 'Fällig',
+      dueSoonHint: 'in den nächsten 30 Tagen',
+    },
+    coverage: {
+      title: 'Produktabdeckung',
+      text: 'Anteil der Kunden je Sparte',
+      concluded: 'abgeschlossen',
+      parents: 'über Eltern',
+      pipeline: 'geplant/angeboten',
+      need: 'Bedarf ohne Vertrag',
+      quote: 'Quote',
+      quoteHint:
+        'Quote = abgeschlossen ÷ Kunden, für die die Sparte relevant ist (ohne „nicht relevant“ und „über Eltern“).',
+      noQuote: '–',
+      needCount: (count: number) => `${count} Bedarf`,
+      rowLabel: (line: string, concluded: number, total: number, quote: string) =>
+        `${line}: ${concluded} von ${total} abgeschlossen, Quote ${quote}`,
+      showCustomers: (label: string) => `${label} anzeigen`,
+      selection: (line: string, segment: string) => `${line}: ${segment}`,
+      menu: (line: string) => `Kunden mit ${line}`,
+    },
+    needs: {
+      title: 'Offene Bedarfe',
+      text: 'Bedarf vor Potenzial – das Potenzial entscheidet nur bei gleicher Priorität.',
+      priority: (priority: number) => `Prio ${priority}`,
+      priorityLabel: (priority: number, count: number) =>
+        `Priorität ${priority}: ${count} ${count === 1 ? 'Bedarf' : 'Bedarfe'}`,
+      adjust: 'Anpassung',
+      potential: (label: string) => `Potenzial ${label}`,
+      none: 'Keine offenen Bedarfe.',
+      more: (count: number) =>
+        count === 1 ? '1 weiterer Kunde mit Bedarf' : `${count} weitere Kunden mit Bedarf`,
+      selection: (priority: number) => `Bedarf Prio ${priority}`,
+    },
+    pipeline: {
+      title: 'Pipeline',
+      text: 'Geplant oder angeboten, nach Sparte',
+      none: 'Nichts geplant oder angeboten.',
+      next: (label: string) => `nächste WV ${label}`,
+      noNext: 'keine offene Wiedervorlage',
+      count: (planned: number, offered: number) =>
+        [planned ? `${planned} geplant` : '', offered ? `${offered} angeboten` : '']
+          .filter(Boolean)
+          .join(' · '),
+    },
+    empty: {
+      title: 'Willkommen bei Kompass',
+      text: 'Leg deinen ersten Kunden an – dann siehst du hier fällige Wiedervorlagen, Geburtstage, Produktabdeckung, offene Bedarfe und deine Pipeline.',
+      create: 'Ersten Kunden anlegen',
+      demo: 'Demo-Daten laden',
+      demoHint: 'Entwicklermodus: 12 erfundene Testkunden',
+      demoLoaded: (count: number) => `${count} Demo-Kunden geladen`,
+      demoFailed: 'Demo-Daten konnten nicht geladen werden.',
     },
   },
   customers: {

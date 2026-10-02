@@ -50,6 +50,35 @@ export function formatCalendarDate(value: string): string {
   return DATE_FORMAT.format(new Date(Date.UTC(y, m - 1, d)));
 }
 
+/** "2026-10-04" → "04.10." (birthdays, the year is clear from the context). */
+export function formatDayMonth(value: string): string {
+  return `${value.slice(8, 10)}.${value.slice(5, 7)}.`;
+}
+
+const LONG_DATE_FORMAT = new Intl.DateTimeFormat('de-DE', {
+  weekday: 'long',
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric',
+  timeZone: 'UTC',
+});
+
+/** "2026-10-02" → "Freitag, 2. Oktober 2026". */
+export function formatLongDate(value: string): string {
+  const [y = 1970, m = 1, d = 1] = value.split('-').map(Number);
+  return LONG_DATE_FORMAT.format(new Date(Date.UTC(y, m - 1, d)));
+}
+
+const PERCENT_FORMAT = new Intl.NumberFormat('de-DE', {
+  style: 'percent',
+  maximumFractionDigits: 0,
+});
+
+/** 0.4166 → "42 %". */
+export function formatPercent(share: number): string {
+  return PERCENT_FORMAT.format(share);
+}
+
 /** ISO timestamp → local "02.10.2026, 09:15". */
 export function formatDateTime(timestamp: string): string {
   return DATE_TIME_FORMAT.format(new Date(timestamp));

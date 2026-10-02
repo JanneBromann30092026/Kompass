@@ -17,6 +17,8 @@ export interface CustomerFilter {
   demo: 'any' | 'only' | 'hide';
   /** Show the archive instead of the active customers. */
   archived: boolean;
+  /** A fixed group of customers chosen elsewhere (e.g. a figure on the start page). */
+  selection?: { label: string; ids: string[] };
 }
 
 export const EMPTY_FILTER: CustomerFilter = {
@@ -40,7 +42,8 @@ export function activeFilterCount(filter: CustomerFilter): number {
     (filter.minors ? 1 : 0) +
     (filter.openPoints ? 1 : 0) +
     (filter.demo !== 'any' ? 1 : 0) +
-    (filter.archived ? 1 : 0)
+    (filter.archived ? 1 : 0) +
+    (filter.selection ? 1 : 0)
   );
 }
 
@@ -82,6 +85,7 @@ export function matchesQuery(customer: Customer, query: string): boolean {
 
 export function matchesFilter(customer: Customer, filter: CustomerFilter, today: string): boolean {
   if (customer.archived !== filter.archived) return false;
+  if (filter.selection && !filter.selection.ids.includes(customer.id)) return false;
   if (filter.lifePhases.length > 0) {
     if (!customer.lifePhase || !filter.lifePhases.includes(customer.lifePhase)) return false;
   }
