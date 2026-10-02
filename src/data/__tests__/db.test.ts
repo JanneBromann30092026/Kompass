@@ -6,16 +6,17 @@ import { settingsRepo } from '../repositories';
 import { resetDb } from './testDb';
 
 describe('database schema', () => {
-  it('opens version 2 under its own name with all tables', async () => {
+  it('opens version 3 under its own name with all tables', async () => {
     expect(await openDatabase()).toEqual({ ok: true });
     expect(db.name).toBe(DB_NAME);
     expect(DB_NAME).not.toBe('synapse');
-    expect(db.verno).toBe(2);
+    expect(db.verno).toBe(3);
     expect(db.tables.map((table) => table.name).sort()).toEqual(
       [
         'campaigns',
         'conversations',
         'customers',
+        'drafts',
         'errorLog',
         'history',
         'lifeEvents',
@@ -33,6 +34,7 @@ describe('database schema', () => {
   it('indexes only technical fields of the encrypted tables', () => {
     const indexes = (name: string) => db.table(name).schema.indexes.map((index) => index.name);
     expect(indexes('customers')).toEqual(['updatedAt']);
+    expect(indexes('drafts')).toEqual(['updatedAt']);
     for (const table of ['needs', 'reminders', 'lifeEvents', 'conversations', 'history']) {
       expect(indexes(table).sort()).toEqual(['customerId', 'updatedAt']);
     }
@@ -47,9 +49,27 @@ describe('database schema', () => {
     v1.close();
     const upgraded = new KompassDb(name);
     expect(await openDatabase(upgraded)).toEqual({ ok: true });
-    expect(upgraded.verno).toBe(2);
+    expect(upgraded.verno).toBe(3);
     expect(await upgraded.settings.get('theme')).toEqual({ key: 'theme', value: 'dark' });
     expect(await upgraded.customers.count()).toBe(0);
+    upgraded.close();
+    await Dexie.delete(name);
+  });
+
+  it('upgrades a step-2 database and keeps its encrypted rows', async () => {
+    const name = 'kompass-upgrade-v2-test';
+    const v2 = new Dexie(name);
+    v2.version(1).stores({ settings: 'key' });
+    v2.version(2).stores({ meta: 'key', customers: 'id, updatedAt' });
+    await v2.open();
+    const row = { id: 'a', updatedAt: '2026-01-01T00:00:00.000Z', payload: { v: 1 } };
+    await v2.table('customers').put(row);
+    v2.close();
+    const upgraded = new KompassDb(name);
+    expect(await openDatabase(upgraded)).toEqual({ ok: true });
+    expect(upgraded.verno).toBe(3);
+    expect(await upgraded.customers.get('a')).toEqual(row);
+    expect(await upgraded.drafts.count()).toBe(0);
     upgraded.close();
     await Dexie.delete(name);
   });

@@ -108,3 +108,24 @@ export type ReminderKind = (typeof REMINDER_KINDS)[number];
 
 export const CAMPAIGN_KINDS = ['seminar', 'invitation', 'other'] as const;
 export type CampaignKind = (typeof CAMPAIGN_KINDS)[number];
+
+/** Free-text answers from the question catalogue (customer.answers). */
+export const ANSWER_KEYS = [
+  'takeover',
+  'reserves',
+  'goalsShort',
+  'goalsMid',
+  'goalsLong',
+  'sport',
+  'vehicles',
+  'pets',
+  'travel',
+  'experience',
+  'horizon',
+  'planMove',
+  'planJob',
+  'planPartner',
+  'planEducation',
+  'bestTime',
+] as const;
+export type AnswerKey = (typeof ANSWER_KEYS)[number];

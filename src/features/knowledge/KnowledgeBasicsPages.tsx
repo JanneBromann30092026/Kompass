@@ -97,7 +97,7 @@ export function QuestionnairePage() {
                 </span>
                 {section.title}
               </h2>
-              <BulletList items={section.questions} />
+              <BulletList items={section.questions.map((question) => question.text)} />
             </Surface>
           ))}
         </div>

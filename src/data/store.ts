@@ -4,6 +4,7 @@ import type {
   Campaign,
   Conversation,
   Customer,
+  Draft,
   HistoryEntry,
   LifeEvent,
   Need,
@@ -19,6 +20,7 @@ export interface DataRecords {
   conversations: Conversation;
   campaigns: Campaign;
   history: HistoryEntry;
+  drafts: Draft;
 }
 
 export type DataMaps = { [T in DataTable]: Record<string, DataRecords[T]> };
@@ -38,6 +40,7 @@ const EMPTY: DataMaps = {
   conversations: {},
   campaigns: {},
   history: {},
+  drafts: {},
 };
 
 /**
