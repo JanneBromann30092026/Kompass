@@ -21,6 +21,8 @@ export interface DemoReminder {
 export interface DemoConversation {
   date: string;
   title: string;
+  participants?: string;
+  /** Sections "Besprochen:", "Ergebnisse:", "Offen:", "Nächste Schritte:" or plain text. */
   notes: string;
 }
 
@@ -101,7 +103,8 @@ export const DEMO_CUSTOMERS: DemoCustomer[] = [
     conversations: [
       {
         date: '2026-09-15',
-        title: 'Erstgespräch (mit Eltern)',
+        title: 'Erstgespräch',
+        participants: 'Leon, Eltern',
         notes: [
           'Besprochen:',
           '- Ausbildungsstart als Bankkaufmann (08/2026), wohnt bei den Eltern.',
@@ -509,7 +512,8 @@ export const DEMO_CUSTOMERS: DemoCustomer[] = [
     conversations: [
       {
         date: '2026-07-12',
-        title: 'Gespräch mit Finn und Eltern',
+        title: 'Erstgespräch',
+        participants: 'Finn, Eltern',
         notes:
           'BF17 seit 07/2026, Ausbildungszusage als Elektroniker ab 08/2027. Eltern stimmen Beratung und Werbung zu.',
       },

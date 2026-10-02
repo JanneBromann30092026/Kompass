@@ -9,6 +9,11 @@ import { commit } from './rows';
 /** There is one draft for a new customer at a time. */
 export const NEW_CUSTOMER_DRAFT_ID = deterministicUuid('kompass:draft:newCustomer');
 
+/** One conversation draft per customer and conversation (new or edited). */
+export function conversationDraftId(customerId: string, conversationId = 'new'): string {
+  return deterministicUuid(`kompass:draft:conversation:${customerId}:${conversationId}`);
+}
+
 export const draftsRepo = {
   get(id: string): Draft | undefined {
     return dataStore.get('drafts', id);

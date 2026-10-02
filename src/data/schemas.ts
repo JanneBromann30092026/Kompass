@@ -213,7 +213,14 @@ export type LifeEvent = z.output<typeof lifeEventSchema>;
 
 const conversationFields = {
   date: isoDate,
+  /** Occasion ("Anlass"), e.g. "Jahresgespräch". */
   title: optionalText(LIMITS.title),
+  participants: optionalText(LIMITS.title),
+  discussed: optionalText(LIMITS.notes),
+  results: optionalText(LIMITS.notes),
+  openItems: optionalText(LIMITS.notes),
+  nextSteps: optionalText(LIMITS.notes),
+  /** Free notes (older conversations and synthetic data). */
   notes: z.string().trim().max(LIMITS.notes).default(''),
 };
 export const conversationInputSchema = z.object(conversationFields);
@@ -265,7 +272,7 @@ export type HistoryEntry = z.output<typeof historyEntrySchema>;
 
 // --- Drafts -----------------------------------------------------------------
 
-export const DRAFT_KINDS = ['newCustomer'] as const;
+export const DRAFT_KINDS = ['newCustomer', 'conversation'] as const;
 
 /** Unfinished input that survives locking and reloading (encrypted like everything else). */
 export const draftSchema = z.object({

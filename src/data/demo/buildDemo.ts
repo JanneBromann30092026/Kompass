@@ -9,7 +9,7 @@ import { applyFieldChanges, diffRecords, type FieldChange } from '@/core/history
 import { deriveReminders, type ReminderFacts } from '@/core/reminders/derive';
 import { LIFE_EVENT_KINDS, type LifeEventKind } from '../domain';
 import { LIFE_EVENT_INFO } from '../reference';
-import { customerSchema } from '../schemas';
+import { conversationSchema, customerSchema } from '../schemas';
 import type {
   Conversation,
   Customer,
@@ -116,6 +116,32 @@ function historyEntry(
   };
 }
 
+const SECTIONS: Readonly<Record<string, 'discussed' | 'results' | 'openItems' | 'nextSteps'>> = {
+  Besprochen: 'discussed',
+  Ergebnisse: 'results',
+  Offen: 'openItems',
+  'Nächste Schritte': 'nextSteps',
+};
+
+/** Demo notes with headings ("Besprochen:" …) into the conversation fields; plain text is "Besprochen". */
+export function noteSections(notes: string): Partial<Record<(typeof SECTIONS)[string], string>> {
+  const fields: Partial<Record<(typeof SECTIONS)[string], string[]>> = {};
+  let current: (typeof SECTIONS)[string] = 'discussed';
+  for (const line of notes.split('\n')) {
+    const heading = SECTIONS[line.replace(/:$/, '').trim()];
+    if (heading && line.trim().endsWith(':')) {
+      current = heading;
+      continue;
+    }
+    (fields[current] ??= []).push(line);
+  }
+  return Object.fromEntries(
+    Object.entries(fields)
+      .map(([key, lines]) => [key, lines.join('\n').trim()])
+      .filter(([, text]) => text !== ''),
+  );
+}
+
 type ReminderFields = Omit<Reminder, 'id' | 'customerId' | 'createdAt' | 'updatedAt'>;
 
 /** The life event a demo reminder of kind "lifeEvent" refers to (by its title). */
@@ -216,15 +242,16 @@ export function buildDemoCustomer(source: DemoCustomer, options: BuildOptions): 
 
   const conversations: Conversation[] = source.conversations.map((conversation, index) => {
     const day = addDays(conversation.date, days);
-    return {
+    return conversationSchema.parse({
       id: linked('conversation', index),
       customerId: id,
       date: day,
       title: conversation.title,
-      notes: shiftTextDates(conversation.notes, days),
+      participants: conversation.participants,
+      ...noteSections(shiftTextDates(conversation.notes, days)),
       createdAt: timestamp(day, 10 * 60 + index, now),
       updatedAt: timestamp(day, 10 * 60 + index, now),
-    };
+    });
   });
 
   const lastContact = [since, ...conversations.map((c) => c.date)].sort().at(-1) ?? since;
