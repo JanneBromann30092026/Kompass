@@ -11,6 +11,7 @@ import {
   campaignSchema,
   conversationSchema,
   customerSchema,
+  draftSchema,
   historyEntrySchema,
   lifeEventSchema,
   needSchema,
@@ -27,6 +28,7 @@ const SCHEMAS: { [T in DataTable]: z.ZodType<DataRecords[T]> } = {
   conversations: conversationSchema,
   campaigns: campaignSchema,
   history: historyEntrySchema,
+  drafts: draftSchema,
 };
 
 export function recordSchema<T extends DataTable>(table: T): z.ZodType<DataRecords[T]> {
@@ -34,7 +36,7 @@ export function recordSchema<T extends DataTable>(table: T): z.ZodType<DataRecor
 }
 
 function customerIdOf(table: DataTable, record: DataRecords[DataTable]): string | undefined {
-  if (table === 'customers' || table === 'campaigns') return undefined;
+  if (table === 'customers' || table === 'campaigns' || table === 'drafts') return undefined;
   return (record as { customerId: string }).customerId;
 }
 

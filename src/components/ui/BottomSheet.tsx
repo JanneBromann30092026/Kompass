@@ -1,4 +1,4 @@
-import { useId, useRef, type ReactNode } from 'react';
+import { useEffect, useId, useRef, type ReactNode } from 'react';
 import { AnimatePresence, motion, useIsPresent, useDragControls, type PanInfo } from 'motion/react';
 import { de } from '@/i18n/de';
 import { fade, spring } from '@/styles/motion';
@@ -47,6 +47,15 @@ function SheetPanel({
   useEscape(onClose, true);
   const keyboardInset = useKeyboardInset();
 
+  // The keyboard covers the lower part: keep the focused field in view.
+  useEffect(() => {
+    if (!keyboardInset) return;
+    const active = document.activeElement;
+    if (active instanceof HTMLElement && panel.current?.contains(active)) {
+      active.scrollIntoView({ block: 'nearest' });
+    }
+  }, [keyboardInset]);
+
   const onDragEnd = (_event: PointerEvent | MouseEvent | TouchEvent, info: PanInfo) => {
     if (info.offset.y > CLOSE_OFFSET_PX || info.velocity.y > CLOSE_VELOCITY) onClose();
   };
@@ -86,6 +95,8 @@ function SheetPanel({
         dragConstraints={{ top: 0, bottom: 0 }}
         dragElastic={{ top: 0.05, bottom: 0.7 }}
         onDragEnd={onDragEnd}
+        // With the keyboard open, the sheet must fit into the visible part.
+        style={keyboardInset ? { maxHeight: `calc(100dvh - ${keyboardInset + 16}px)` } : undefined}
         className="relative flex max-h-[88dvh] w-full max-w-2xl flex-col rounded-t-xl border border-b-0 border-line bg-surface-raised pb-[env(safe-area-inset-bottom)] shadow-float outline-none"
       >
         <div

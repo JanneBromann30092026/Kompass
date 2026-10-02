@@ -194,6 +194,8 @@ export function buildSyntheticCustomers(count: number, options: SyntheticOptions
       potential: pick(['high', 'medium', 'medium', 'low'] as const),
       tags: [SYNTHETIC_TAG],
       openPoints: [],
+      answers: {},
+      archived: false,
       demo: true,
       createdAt,
       updatedAt: createdAt,

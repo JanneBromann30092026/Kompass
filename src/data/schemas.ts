@@ -5,6 +5,7 @@
 import { z } from 'zod';
 import { CUSTOMER_NUMBER_PATTERN } from '@/core/customerNumber';
 import {
+  ANSWER_KEYS,
   CAMPAIGN_KINDS,
   CONTACT_CHANNELS,
   CONTRACT_STATUSES,
@@ -31,6 +32,7 @@ export const LIMITS = {
   tags: 30,
   openPoint: 300,
   openPoints: 50,
+  answer: 1_000,
   title: 120,
   text: 5_000,
   notes: 20_000,
@@ -67,6 +69,16 @@ const textList = (maxItem: number, maxItems: number) =>
 
 const consent = z.object({ granted: z.boolean(), date: isoDate });
 
+const money = z.number().min(0).max(1_000_000).optional();
+
+/** Free-text answers of the question catalogue; empty answers are removed. */
+const answersSchema = z.object(
+  Object.fromEntries(ANSWER_KEYS.map((key) => [key, optionalText(LIMITS.answer)])) as Record<
+    (typeof ANSWER_KEYS)[number],
+    ReturnType<typeof optionalText>
+  >,
+);
+
 const contractStatus = z.enum(CONTRACT_STATUSES).default('open');
 
 /** Status per product line; lines that were never discussed are "open". */
@@ -94,8 +106,13 @@ const customerFields = {
   housing: z.enum(HOUSING).optional(),
   maritalStatus: z.enum(MARITAL_STATUSES).optional(),
   children: z.int().min(0).max(20).optional(),
-  /** Approximate monthly net income in euros. */
-  netIncome: z.number().min(0).max(1_000_000).optional(),
+  /** Approximate monthly amounts in euros. */
+  netIncome: money,
+  fixedCosts: money,
+  disposableIncome: money,
+  /** Does the employer pay capital-forming benefits (VL) / a company pension (bAV)? */
+  employerVl: z.boolean().optional(),
+  employerBav: z.boolean().optional(),
   riskProfile: z.enum(RISK_PROFILES).optional(),
   /** Only whether the health check is done – never health data itself. */
   healthCheckDone: z.boolean().optional(),
@@ -113,6 +130,9 @@ const customerFields = {
   tags: textList(LIMITS.tag, LIMITS.tags).default([]),
   /** Unknown facts to ask for in the next conversation. */
   openPoints: textList(LIMITS.openPoint, LIMITS.openPoints).default([]),
+  answers: answersSchema.default({}),
+  /** Archived customers are hidden from lists but kept (instead of deleting). */
+  archived: z.boolean().default(false),
   /** Invented demo/test customer (removable in one go). */
   demo: z.boolean().default(false),
 };
@@ -226,6 +246,22 @@ export const historyEntrySchema = z.object({
   ),
 });
 export type HistoryEntry = z.output<typeof historyEntrySchema>;
+
+// --- Drafts -----------------------------------------------------------------
+
+export const DRAFT_KINDS = ['newCustomer'] as const;
+
+/** Unfinished input that survives locking and reloading (encrypted like everything else). */
+export const draftSchema = z.object({
+  id,
+  kind: z.enum(DRAFT_KINDS),
+  /** Position in a multi-step form. */
+  step: z.int().min(0).max(100),
+  data: z.record(z.string(), z.unknown()),
+  createdAt: timestamp,
+  updatedAt: timestamp,
+});
+export type Draft = z.output<typeof draftSchema>;
 
 // --- Settings -------------------------------------------------------------
 

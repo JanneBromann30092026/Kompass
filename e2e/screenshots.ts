@@ -189,6 +189,105 @@ async function devDemo(page: Page) {
   await page.waitForTimeout(3200); // let the toast disappear
 }
 
+/** Demo data for the customer shots (also in a filtered run). */
+async function ensureDemo(page: Page) {
+  // Split View runs only some shots: the developer mode may still be off.
+  await enableDevMode(page);
+  const section = page.getByTestId('dev-section-demo');
+  await section.waitFor();
+  if ((await section.getByTestId('demo-count').textContent()) === '0') {
+    await section.getByRole('button', { name: 'Demo-Daten laden' }).click();
+    await section
+      .getByTestId('demo-count')
+      .filter({ hasText: /^1[2-9]$/ })
+      .waitFor();
+  }
+  await page.goto(`${PREVIEW_URL}#/customers`);
+  await page.getByTestId('customer-row').first().waitFor();
+  await page.waitForTimeout(3200); // let the toast disappear
+}
+
+async function openCustomer(page: Page, name: string) {
+  await ensureDemo(page);
+  await page.getByTestId('customer-row').filter({ hasText: name }).first().click();
+  await page.getByTestId('customer-file').waitFor();
+}
+
+const customersList = ensureDemo;
+
+async function customersFilter(page: Page) {
+  await ensureDemo(page);
+  await page.getByTestId('open-filters').click();
+  await page.getByTestId('filter-panel').waitFor();
+  await page.getByRole('button', { name: 'Ausbildung', exact: true }).click();
+}
+
+async function customersSearch(page: Page) {
+  await ensureDemo(page);
+  await page.getByTestId('customer-search').fill('azubi');
+}
+
+const customerFile = (page: Page) => openCustomer(page, 'Ben');
+
+async function customerEdit(page: Page) {
+  await openCustomer(page, 'Ben');
+  await page
+    .getByTestId('file-contact')
+    .getByRole('button', { name: /bearbeiten/ })
+    .click();
+  await page.getByTestId('section-editor').waitFor();
+  await page.getByTestId('field-phone').focus();
+  await setKeyboard(page, true);
+}
+
+async function customerContract(page: Page) {
+  await openCustomer(page, 'Leon');
+  await page.getByTestId('contract-chip-accident').click();
+  await page.getByRole('menu').waitFor();
+}
+
+async function customerHistory(page: Page) {
+  await openCustomer(page, 'Leon');
+  const history = page.getByTestId('file-history');
+  await history.getByTestId('history-entry').first().getByRole('button').click();
+  await history.evaluate((element) => element.scrollIntoView({ block: 'start' }));
+}
+
+/** Starts the question catalogue without the draft of the previous shot. */
+async function freshWizard(page: Page) {
+  await page.getByTestId('wizard').waitFor();
+  await page.getByTestId('wizard-cancel').click();
+  const discard = page.getByRole('button', { name: 'Verwerfen' });
+  if (await discard.isVisible()) await discard.click();
+  await page.getByTestId('wizard').waitFor({ state: 'detached' });
+  await page.goto(`${PREVIEW_URL}#/customers/new`);
+  await page.getByTestId('field-firstName').waitFor();
+  await page.waitForTimeout(3200); // let the toast disappear
+}
+
+async function wizardStart(page: Page) {
+  await freshWizard(page);
+  await page.getByTestId('field-firstName').fill('Mila');
+  await page.getByTestId('field-phone').focus();
+  await setKeyboard(page, true);
+}
+
+async function wizardJob(page: Page) {
+  await freshWizard(page);
+  await page.getByTestId('field-firstName').fill('Mila');
+  await page.getByTestId('wizard-next').click();
+  await page.getByTestId('wizard-title').filter({ hasText: 'Beruf' }).waitFor();
+  await page.getByLabel('Lebensphase').first().selectOption('training');
+  await page.getByTestId('field-occupation').fill('Azubi Industriekauffrau');
+}
+
+async function wizardSummary(page: Page) {
+  await freshWizard(page);
+  await page.getByTestId('field-firstName').fill('Mila');
+  for (let step = 0; step < 9; step += 1) await page.getByTestId('wizard-next').click();
+  await page.getByTestId('wizard-summary').waitFor();
+}
+
 async function knowledgeSearch(page: Page) {
   await page.getByTestId('knowledge-search').fill('nachvers');
   await page.getByTestId('knowledge-result').first().waitFor();
@@ -240,6 +339,22 @@ const SHOTS: Shot[] = [
   { route: '/dev/ui', name: 'dev-ui', prepare: enableDevMode, scroll: true },
   { route: '/dev/ui', name: 'dev-vault', prepare: devVault },
   { route: '/dev/ui', name: 'dev-demo', prepare: devDemo },
+  {
+    route: '/customers',
+    name: 'customers-list',
+    prepare: customersList,
+    scroll: true,
+    split: true,
+  },
+  { route: '/customers', name: 'customers-filter', prepare: customersFilter },
+  { route: '/customers', name: 'customers-search', prepare: customersSearch },
+  { route: '/customers', name: 'customers-file', prepare: customerFile, scroll: true, split: true },
+  { route: '/customers', name: 'customers-edit', prepare: customerEdit },
+  { route: '/customers', name: 'customers-contract', prepare: customerContract },
+  { route: '/customers', name: 'customers-history', prepare: customerHistory },
+  { route: '/customers/new', name: 'customers-new', prepare: wizardStart, split: true },
+  { route: '/customers/new', name: 'customers-new-job', prepare: wizardJob },
+  { route: '/customers/new', name: 'customers-new-summary', prepare: wizardSummary, scroll: true },
   { route: '/dev/ui', name: 'dev-modal', prepare: click('Modal öffnen') },
   { route: '/dev/ui', name: 'dev-sheet', prepare: click('Bottom Sheet öffnen') },
   { route: '/dev/ui', name: 'dev-focus', prepare: focusMode },

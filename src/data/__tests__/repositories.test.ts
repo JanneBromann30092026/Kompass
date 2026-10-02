@@ -5,6 +5,8 @@ import {
   campaignsRepo,
   conversationsRepo,
   customersRepo,
+  draftsRepo,
+  NEW_CUSTOMER_DRAFT_ID,
   lifeEventsRepo,
   metaRepo,
   needsRepo,
@@ -13,7 +15,7 @@ import {
 import { decryptRow } from '@/data/repositories/rows';
 import { useDataStore } from '@/data/store';
 import { vault } from '@/services/vault';
-import { resetDb } from './testDb';
+import { rawDump, resetDb } from './testDb';
 
 beforeEach(async () => {
   vault.lock();
@@ -154,5 +156,52 @@ describe('linked records', () => {
     await campaignsRepo.update(campaign.id, { date: '2026-11-20' });
     expect(campaignsRepo.list()[0]?.date).toBe('2026-11-20');
     expect(Object.keys(useDataStore.getState().history)).toHaveLength(0);
+  });
+});
+
+describe('customer extras (step 4)', () => {
+  it('normalises phone numbers and archives instead of deleting', async () => {
+    const customer = await customersRepo.create({ firstName: 'Lena', phone: '0151 / 123 4567' });
+    expect(customer.phone).toBe('+49 151 123 4567');
+    const updated = await customersRepo.update(customer.id, { phone: '0049 30 1234' });
+    expect(updated.phone).toBe('+49 30 1234');
+
+    const archived = await customersRepo.setArchived(customer.id, true);
+    expect(archived.archived).toBe(true);
+    expect(customersRepo.get(customer.id)).toBeDefined();
+    expect(historyOf(customer.id).at(-1)?.changes).toEqual([
+      { path: 'archived', from: false, to: true },
+    ]);
+  });
+
+  it('settles open points from the question catalogue once answered', async () => {
+    const customer = await customersRepo.create({
+      firstName: 'Lena',
+      openPoints: ['Person: Kinder', 'Finanzen: Netto-Einkommen', 'Eltern anrufen'],
+    });
+    const updated = await customersRepo.update(customer.id, { children: 0 });
+    expect(updated.openPoints).toEqual(['Finanzen: Netto-Einkommen', 'Eltern anrufen']);
+    expect(historyOf(customer.id).at(-1)?.changes).toContainEqual({
+      path: 'openPoints',
+      from: ['Person: Kinder', 'Finanzen: Netto-Einkommen', 'Eltern anrufen'],
+      to: ['Finanzen: Netto-Einkommen', 'Eltern anrufen'],
+    });
+  });
+
+  it('keeps an encrypted draft until it is removed', async () => {
+    await draftsRepo.save(NEW_CUSTOMER_DRAFT_ID, 'newCustomer', 2, {
+      firstName: 'Entwurfsname',
+      phone: '0151 999',
+    });
+    expect(draftsRepo.get(NEW_CUSTOMER_DRAFT_ID)?.step).toBe(2);
+    expect(await rawDump()).not.toContain('Entwurfsname');
+    const second = await draftsRepo.save(NEW_CUSTOMER_DRAFT_ID, 'newCustomer', 3, {
+      firstName: 'Entwurfsname',
+    });
+    expect(second.createdAt <= second.updatedAt).toBe(true);
+    expect(await db.drafts.count()).toBe(1);
+    await draftsRepo.remove(NEW_CUSTOMER_DRAFT_ID);
+    expect(draftsRepo.get(NEW_CUSTOMER_DRAFT_ID)).toBeUndefined();
+    expect(await db.drafts.count()).toBe(0);
   });
 });

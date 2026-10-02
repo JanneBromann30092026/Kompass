@@ -33,7 +33,9 @@ test('knowledge: open, browse linked entries, go back', async ({ page }, testInf
   await expect(heading(page, 'BU')).toBeVisible();
   await expect(page.getByTestId('rule-useful')).toContainText('Eigenes Einkommen');
   await expect(page.getByTestId('rule-objections')).toContainText('Ich bin jung und gesund.');
-  await expect(page.getByTestId('knowledge-customers')).toContainText('Kommt in Schritt 4');
+  await expect(page.getByTestId('knowledge-customers')).toContainText(
+    'Noch keine passenden Kunden.',
+  );
 
   await page.getByTestId('rule-triggers').getByRole('link', { name: 'Ausbildungsende' }).click();
   await expect(heading(page, 'Ausbildungsende')).toBeVisible();

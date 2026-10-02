@@ -8,6 +8,7 @@ import { createLinkedRepo } from './recordsRepo';
 
 export { campaignsRepo } from './campaignsRepo';
 export { customersRepo } from './customersRepo';
+export { draftsRepo, NEW_CUSTOMER_DRAFT_ID } from './draftsRepo';
 export { metaRepo, VaultExistsError } from './metaRepo';
 export { settingsRepo } from './settingsRepo';
 

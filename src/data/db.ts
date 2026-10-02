@@ -20,6 +20,7 @@ export const DATA_TABLES = [
   'conversations',
   'campaigns',
   'history',
+  'drafts',
 ] as const;
 export type DataTable = (typeof DATA_TABLES)[number];
 
@@ -33,6 +34,7 @@ export class KompassDb extends Dexie {
   conversations!: EntityTable<EncryptedRow, 'id'>;
   campaigns!: EntityTable<EncryptedRow, 'id'>;
   history!: EntityTable<EncryptedRow, 'id'>;
+  drafts!: EntityTable<EncryptedRow, 'id'>;
   secrets!: EntityTable<SecretRow, 'key'>;
   snapshots!: EntityTable<SnapshotRow, 'id'>;
   errorLog!: EntityTable<ErrorLogRow, 'id'>;
@@ -67,6 +69,11 @@ export class KompassDb extends Dexie {
       secrets: 'key',
       snapshots: 'id, createdAt',
       errorLog: 'id, at',
+    });
+
+    // Step 4: encrypted drafts (new customer from the question catalogue). New table only.
+    this.version(3).stores({
+      drafts: 'id, updatedAt',
     });
   }
 }

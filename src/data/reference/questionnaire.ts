@@ -1,8 +1,20 @@
 /**
  * Question catalogue for a new customer. Source: 09_Vorlagen/Fragenkatalog, adapted to
  * Kompass: last name, phone and e-mail are optional here (they never leave the device).
+ * Each question names the customer fields that answer it (see questionSchema).
  */
+import type { LifePhase } from '../domain';
 import type { Questionnaire } from './schemas';
+
+/** People with an employer (not at school, not retired). */
+const EMPLOYED: LifePhase[] = [
+  'training',
+  'careerStart',
+  'movingOut',
+  'partnership',
+  'family',
+  'property',
+];
 
 export const QUESTIONNAIRE: Questionnaire = {
   title: 'Fragenkatalog (neuer Kunde)',
@@ -11,71 +23,136 @@ export const QUESTIONNAIRE: Questionnaire = {
       key: 'person',
       title: 'Person',
       questions: [
-        'Geburtsdatum (oder Jahrgang)',
-        'Familienstand',
-        'Kinder',
-        'Wohnsituation (Eltern / Miete / Eigentum)',
+        { key: 'birth', text: 'Geburtsdatum (oder Jahrgang)', fields: ['birthDate', 'birthYear'] },
+        { key: 'maritalStatus', text: 'Familienstand', fields: ['maritalStatus'] },
+        { key: 'children', text: 'Kinder', fields: ['children'] },
+        {
+          key: 'housing',
+          text: 'Wohnsituation (Eltern / Miete / Eigentum)',
+          fields: ['housing'],
+        },
       ],
     },
     {
       key: 'job',
       title: 'Beruf',
       questions: [
-        'Ausbildung, Studium oder Job',
-        'Beginn und geplantes Ende',
-        'Übernahme?',
-        'Zahlt der Arbeitgeber VL oder bAV?',
+        {
+          key: 'occupation',
+          text: 'Ausbildung, Studium oder Job',
+          fields: ['lifePhase', 'occupation'],
+        },
+        {
+          key: 'period',
+          text: 'Beginn und geplantes Ende',
+          fields: ['trainingStart', 'trainingEnd'],
+          onlyFor: ['training', 'studies'],
+        },
+        {
+          key: 'takeover',
+          text: 'Übernahme?',
+          fields: ['answers.takeover'],
+          onlyFor: ['training', 'studies'],
+        },
+        {
+          key: 'employer',
+          text: 'Zahlt der Arbeitgeber VL oder bAV?',
+          fields: ['employerVl', 'employerBav'],
+          onlyFor: EMPLOYED,
+        },
       ],
     },
     {
       key: 'finances',
       title: 'Finanzen',
       questions: [
-        'Netto-Einkommen',
-        'Feste Ausgaben',
-        'Monatlich frei verfügbar',
-        'Rücklagen (ja/nein, grob)',
+        { key: 'netIncome', text: 'Netto-Einkommen', fields: ['netIncome'] },
+        { key: 'fixedCosts', text: 'Feste Ausgaben', fields: ['fixedCosts'] },
+        { key: 'disposable', text: 'Monatlich frei verfügbar', fields: ['disposableIncome'] },
+        { key: 'reserves', text: 'Rücklagen (ja/nein, grob)', fields: ['answers.reserves'] },
       ],
     },
     {
       key: 'goals',
       title: 'Ziele',
       questions: [
-        'Kurzfristig (Führerschein, Auto, Reise)',
-        'Mittelfristig (Auszug, Studium)',
-        'Langfristig (Eigentum, Ruhestand)',
+        {
+          key: 'goalsShort',
+          text: 'Kurzfristig (Führerschein, Auto, Reise)',
+          fields: ['answers.goalsShort'],
+        },
+        {
+          key: 'goalsMid',
+          text: 'Mittelfristig (Auszug, Studium)',
+          fields: ['answers.goalsMid'],
+        },
+        {
+          key: 'goalsLong',
+          text: 'Langfristig (Eigentum, Ruhestand)',
+          fields: ['answers.goalsLong'],
+        },
       ],
     },
     {
       key: 'contracts',
       title: 'Bestehende Verträge',
-      questions: ['Eigene Verträge', 'Über die Eltern mitversichert'],
+      questions: [
+        { key: 'ownContracts', text: 'Eigene Verträge', fields: ['contracts'] },
+        {
+          key: 'viaParents',
+          text: 'Über die Eltern mitversichert',
+          fields: ['contracts'],
+          onlyFor: ['school', 'training', 'studies', 'careerStart', 'movingOut'],
+        },
+      ],
     },
     {
       key: 'risks',
       title: 'Risiken & Hobbys',
-      questions: ['Sport', 'Fahrzeuge', 'Haustiere', 'Auslandsreisen'],
+      questions: [
+        { key: 'sport', text: 'Sport', fields: ['answers.sport'] },
+        { key: 'vehicles', text: 'Fahrzeuge', fields: ['answers.vehicles'] },
+        { key: 'pets', text: 'Haustiere', fields: ['answers.pets'] },
+        { key: 'travel', text: 'Auslandsreisen', fields: ['answers.travel'] },
+      ],
     },
     {
       key: 'investment',
       title: 'Anlage',
       questions: [
-        'Erfahrung',
-        'Risikobereitschaft',
-        'Anlagehorizont (für die Geeignetheitsprüfung)',
+        { key: 'experience', text: 'Erfahrung', fields: ['answers.experience'] },
+        { key: 'riskProfile', text: 'Risikobereitschaft', fields: ['riskProfile'] },
+        {
+          key: 'horizon',
+          text: 'Anlagehorizont (für die Geeignetheitsprüfung)',
+          fields: ['answers.horizon'],
+        },
       ],
     },
     {
       key: 'plans',
       title: 'Pläne in den nächsten 1–3 Jahren',
-      questions: ['Umzug', 'Jobwechsel', 'Partner', 'Weiterbildung'],
+      questions: [
+        { key: 'planMove', text: 'Umzug', fields: ['answers.planMove'] },
+        { key: 'planJob', text: 'Jobwechsel', fields: ['answers.planJob'] },
+        { key: 'planPartner', text: 'Partner', fields: ['answers.planPartner'] },
+        { key: 'planEducation', text: 'Weiterbildung', fields: ['answers.planEducation'] },
+      ],
     },
     {
       key: 'communication',
       title: 'Kommunikation',
       questions: [
-        'Bevorzugter Kanal und beste Zeit',
-        'Einwilligungen: Datenspeicherung, Werbung/Seminar-Einladung',
+        {
+          key: 'channel',
+          text: 'Bevorzugter Kanal und beste Zeit',
+          fields: ['consents.contactChannel', 'answers.bestTime'],
+        },
+        {
+          key: 'consents',
+          text: 'Einwilligungen: Datenspeicherung, Werbung/Seminar-Einladung',
+          fields: ['consents.dataStorage', 'consents.marketing'],
+        },
       ],
     },
   ],

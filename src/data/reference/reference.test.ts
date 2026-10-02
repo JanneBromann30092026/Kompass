@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { searchDocuments } from '@/core/search';
-import { LIFE_EVENT_KINDS, LIFE_PHASES, PRODUCT_LINES, TOPICS } from '../domain';
+import { ANSWER_KEYS, LIFE_EVENT_KINDS, LIFE_PHASES, PRODUCT_LINES, TOPICS } from '../domain';
+import { customerSchema } from '../schemas';
 import {
   knowledgeDocuments,
   LIFE_EVENT_INFO,
@@ -42,6 +43,24 @@ describe('reference data', () => {
     }
     questionnaireSchema.parse(QUESTIONNAIRE);
     PRIORITIZATION.levels.forEach((level) => priorityLevelSchema.parse(level));
+  });
+
+  it('maps every question to existing customer fields, each answer key once', () => {
+    const fields = Object.keys(customerSchema.shape);
+    const consents = ['dataStorage', 'marketing', 'contactChannel'];
+    const keys = QUESTIONNAIRE.sections.flatMap((s) => s.questions.map((q) => q.key));
+    expect(new Set(keys).size).toBe(keys.length);
+    const answers: string[] = [];
+    for (const question of QUESTIONNAIRE.sections.flatMap((s) => s.questions)) {
+      for (const path of question.fields) {
+        const [head = '', tail] = path.split('.');
+        expect(fields, path).toContain(head);
+        if (head === 'answers') answers.push(tail ?? '');
+        if (head === 'consents') expect(consents).toContain(tail);
+      }
+    }
+    expect(answers.sort()).toEqual([...ANSWER_KEYS].sort());
+    expect(QUESTIONNAIRE.sections).toHaveLength(9);
   });
 
   it('keeps the priorities of CLAUDE.md and the need rules in line', () => {

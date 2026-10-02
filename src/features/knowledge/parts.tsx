@@ -273,19 +273,62 @@ export function Hero({
   );
 }
 
-/** Where later steps show the matching customers. */
-export function CustomersPlaceholder({ title }: { title: string }) {
+export interface MatchingCustomer {
+  id: string;
+  number: string;
+  name: string;
+  detail?: string;
+}
+
+const MAX_CUSTOMERS = 12;
+
+/** Customers this entry applies to (active ones), linked to their files. */
+export function MatchingCustomers({
+  title,
+  customers,
+}: {
+  title: string;
+  customers: MatchingCustomer[];
+}) {
   return (
-    <div
-      className="flex flex-col items-start gap-3 rounded-xl border border-dashed border-line-strong p-5 sm:flex-row sm:items-center"
-      data-testid="knowledge-customers"
-    >
-      <IconCircle icon={Users} />
-      <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-        <span className="text-base font-semibold text-fg">{title}</span>
-        <span className="text-sm text-fg-secondary">{t.customersSoon}</span>
-      </div>
-      <Badge tone="amber">{de.comingSoon.badge(4)}</Badge>
-    </div>
+    <Surface className="flex flex-col gap-3" data-testid="knowledge-customers">
+      <h2 className="flex items-center gap-2 text-lg font-semibold tracking-tight text-fg">
+        <Users size={20} aria-hidden className="text-accent" />
+        <span className="flex-1">{title}</span>
+        <span className="text-sm font-medium text-fg-muted">
+          {t.customersCount(customers.length)}
+        </span>
+      </h2>
+      {customers.length === 0 ? (
+        <p className="text-base text-fg-muted">{t.noCustomers}</p>
+      ) : (
+        <ul className="flex flex-wrap gap-2">
+          {customers.slice(0, MAX_CUSTOMERS).map((customer) => (
+            <li key={customer.id}>
+              <Link
+                to={`/customers/${customer.id}`}
+                className={cn(
+                  tappable,
+                  'inline-flex min-h-11 items-center gap-2 rounded-full border border-line bg-surface-raised px-4 text-sm font-medium text-fg shadow-soft',
+                )}
+              >
+                <span>{customer.name}</span>
+                <span className="text-xs font-semibold text-fg-muted tabular-nums">
+                  {customer.number}
+                </span>
+                {customer.detail && (
+                  <span className="text-xs text-fg-secondary">· {customer.detail}</span>
+                )}
+              </Link>
+            </li>
+          ))}
+          {customers.length > MAX_CUSTOMERS && (
+            <li className="flex min-h-11 items-center px-2 text-sm text-fg-muted">
+              +{customers.length - MAX_CUSTOMERS}
+            </li>
+          )}
+        </ul>
+      )}
+    </Surface>
   );
 }

@@ -83,9 +83,23 @@ export const topicInfoSchema = z.object({
   products: z.array(z.enum(PRODUCT_LINES)).min(1),
 });
 
+/**
+ * A question with the customer fields that answer it ("answers.<key>" for free text). It
+ * counts as answered when one of them has a value; unanswered questions become open points.
+ */
+export const questionSchema = z.object({
+  key: text,
+  text,
+  fields: texts.min(1),
+  /** Only asked in these life phases (always, while the phase is unknown). */
+  onlyFor: z.array(z.enum(LIFE_PHASES)).min(1).optional(),
+});
+
 export const questionnaireSchema = z.object({
   title: text,
-  sections: z.array(z.object({ key: text, title: text, questions: texts.min(1) })).min(1),
+  sections: z
+    .array(z.object({ key: text, title: text, questions: z.array(questionSchema).min(1) }))
+    .min(1),
   missingAnswers: text,
   doNotStore: z.object({ title: text, items: texts.min(1), optional: text }),
 });
@@ -99,4 +113,6 @@ export type LifeEventInfo = z.output<typeof lifeEventInfoSchema>;
 export type ReminderRule = z.output<typeof reminderRuleSchema>;
 export type TopicInfo = z.output<typeof topicInfoSchema>;
 export type Questionnaire = z.output<typeof questionnaireSchema>;
+export type Question = z.output<typeof questionSchema>;
+export type QuestionnaireSection = Questionnaire['sections'][number];
 export type PriorityLevel = z.output<typeof priorityLevelSchema>;
