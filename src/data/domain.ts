@@ -78,6 +78,10 @@ export const MARITAL_STATUSES = [
 ] as const;
 export type MaritalStatus = (typeof MARITAL_STATUSES)[number];
 
+/** Kind of employment (decides e.g. on bAV, VL and statutory pension). */
+export const EMPLOYMENTS = ['employee', 'selfEmployed', 'civilServant'] as const;
+export type Employment = (typeof EMPLOYMENTS)[number];
+
 export const RISK_PROFILES = ['conservative', 'balanced', 'growth'] as const;
 export type RiskProfile = (typeof RISK_PROFILES)[number];
 

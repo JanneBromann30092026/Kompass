@@ -163,6 +163,7 @@ export const de = {
       lifePhase: 'Lebensphase',
       occupation: 'Beruf / Ausbildung',
       occupationPlaceholder: 'z. B. Azubi Bankkaufmann',
+      employment: 'Beschäftigung',
       trainingStart: 'Beginn (Ausbildung / Studium)',
       trainingEnd: 'Geplantes Ende',
       employerVl: 'Arbeitgeber zahlt VL',

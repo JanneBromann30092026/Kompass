@@ -9,6 +9,7 @@ import {
   CAMPAIGN_KINDS,
   CONTACT_CHANNELS,
   CONTRACT_STATUSES,
+  EMPLOYMENTS,
   HOUSING,
   LIFE_EVENT_KINDS,
   LIFE_PHASES,
@@ -101,6 +102,7 @@ const customerFields = {
   birthYear: z.int().min(1900).max(2100).optional(),
   lifePhase: z.enum(LIFE_PHASES).optional(),
   occupation: optionalText(LIMITS.occupation),
+  employment: z.enum(EMPLOYMENTS).optional(),
   trainingStart: yearMonth.optional(),
   trainingEnd: yearMonth.optional(),
   housing: z.enum(HOUSING).optional(),
@@ -167,6 +169,11 @@ const needFields = {
   reason: optionalText(LIMITS.text),
   status: z.enum(NEED_STATUSES).default('open'),
   source: z.enum(['rule', 'manual']).default('manual'),
+  /**
+   * Fingerprint of the engine's suggestion when the decision was made; if the facts
+   * change the suggestion, the decision is flagged "neu prüfen".
+   */
+  basis: z.string().max(2_000).optional(),
 };
 export const needInputSchema = z.object(needFields);
 export const needSchema = z.object({ ...linkedBase, ...needFields });

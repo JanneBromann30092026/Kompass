@@ -40,7 +40,7 @@ export const QUESTIONNAIRE: Questionnaire = {
         {
           key: 'occupation',
           text: 'Ausbildung, Studium oder Job',
-          fields: ['lifePhase', 'occupation'],
+          fields: ['lifePhase', 'occupation', 'employment'],
         },
         {
           key: 'period',

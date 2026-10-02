@@ -5,6 +5,7 @@ import type { ProductLine } from '@/data/domain';
 import {
   CONTACT_CHANNEL_LABELS,
   CONTRACT_STATUS_LABELS,
+  EMPLOYMENT_LABELS,
   HOUSING_LABELS,
   LIFE_EVENT_INFO,
   LIFE_PHASE_INFO,
@@ -51,6 +52,7 @@ const MONEY_FIELDS = new Set(['netIncome', 'fixedCosts', 'disposableIncome']);
 
 const ENUM_LABELS: Record<string, Record<string, string>> = {
   housing: HOUSING_LABELS,
+  employment: EMPLOYMENT_LABELS,
   maritalStatus: MARITAL_STATUS_LABELS,
   riskProfile: RISK_PROFILE_LABELS,
   potential: POTENTIAL_LABELS,

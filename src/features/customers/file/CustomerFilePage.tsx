@@ -37,6 +37,7 @@ import { ANSWER_KEYS, type AnswerKey } from '@/data/domain';
 import { customersRepo } from '@/data/repositories';
 import {
   CONTACT_CHANNEL_LABELS,
+  EMPLOYMENT_LABELS,
   HOUSING_LABELS,
   LIFE_PHASE_INFO,
   MARITAL_STATUS_LABELS,
@@ -93,6 +94,7 @@ const EDITORS: Record<EditorKey, { groups: FieldGroup[]; description?: string }>
         fields: [
           'lifePhase',
           'occupation',
+          'employment',
           'trainingStart',
           'trainingEnd',
           'employerVl',
@@ -335,6 +337,10 @@ function FileContent({ customer }: { customer: Customer }) {
                   value: customer.lifePhase && LIFE_PHASE_INFO[customer.lifePhase].name,
                 },
                 { label: f.occupation, value: customer.occupation },
+                {
+                  label: f.employment,
+                  value: customer.employment && EMPLOYMENT_LABELS[customer.employment],
+                },
                 {
                   label: f.trainingStart,
                   value: customer.trainingStart && formatCalendarDate(customer.trainingStart),
