@@ -59,6 +59,7 @@ const ENUM_LABELS: Record<string, Record<string, string>> = {
   channel: CONTACT_CHANNEL_LABELS,
   timing: NEED_TIMING_LABELS,
   status: NEED_STATUS_LABELS,
+  source: de.customers.file.historySources,
 };
 
 const MAX_TEXT = 80;

@@ -94,7 +94,7 @@ export const NEED_REASON_TEXTS: Readonly<Record<ReasonCode, (reason: NeedReason)
   vlNoVl: () => 'Arbeitgeber zahlt keine VL.',
   vlSelfEmployed: () => 'Selbständig – keine VL.',
   vlCivilServant: () => 'Beamtenlaufbahn – eigene Regeln, prüfen.',
-  vlTrainingStart: (r) => `Ab dem ${eventAt(r)} (erstes Gehalt).`,
+  vlTrainingStart: (r) => `Ab dem ${eventAt(r)}, mit dem ersten Gehalt.`,
   vlNewEmployer: (r) =>
     r.event
       ? `Beim neuen Arbeitgeber erfragen (${eventPlain(r)}).`

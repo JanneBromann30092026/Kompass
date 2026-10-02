@@ -74,7 +74,7 @@ export const NEED_TIMING_LABELS = {
 export const NEED_STATUS_LABELS = {
   open: 'offen',
   accepted: 'übernommen',
-  dismissed: 'verworfen',
+  dismissed: 'abgelehnt',
   done: 'erledigt',
 } as const satisfies Record<NeedStatus, string>;
 

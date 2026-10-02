@@ -59,8 +59,8 @@ export function needViews(
       : state === 'dismissed'
         ? 'dismissed'
         : state === 'suggested'
-          ? (assessment.timing as NeedTiming)
-          : (decision?.timing ?? (assessment.timing as NeedTiming));
+          ? assessment.timing
+          : (decision?.timing ?? assessment.timing);
     return {
       line: assessment.line,
       assessment,
