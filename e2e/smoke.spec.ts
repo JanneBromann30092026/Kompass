@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { enableDevMode, nav, openApp, reloadAndUnlock, unlock } from './vault.ts';
+import { enableDevMode, nav, openApp, reloadAndUnlock, storageDump, unlock } from './vault.ts';
 
 function collectConsoleProblems(page: Page): string[] {
   const problems: string[] = [];
@@ -38,6 +38,10 @@ test('sidebar from 900 px, tab bar below', async ({ page }, testInfo) => {
   // The sidebar collapses and stays collapsed after a reload.
   await page.getByRole('button', { name: 'Seitenleiste einklappen' }).click();
   await expect(page.getByRole('button', { name: 'Seitenleiste ausklappen' })).toBeVisible();
+  // Saved asynchronously: wait for the stored setting before reloading.
+  await expect
+    .poll(async () => (await storageDump(page)).indexedDb)
+    .toContain('{"key":"sidebarCollapsed","value":true}');
   await reloadAndUnlock(page);
   await expect(page.getByRole('button', { name: 'Seitenleiste ausklappen' })).toBeVisible();
   await page.getByRole('button', { name: 'Seitenleiste ausklappen' }).click();
@@ -48,7 +52,7 @@ test('navigation switches pages', async ({ page }) => {
   await openApp(page);
   const pages = [
     ['Kunden', 'Noch keine Kunden'],
-    ['Wiedervorlagen', 'Kommt in Schritt 6'],
+    ['Wiedervorlagen', 'Keine offenen Wiedervorlagen'],
     ['Aktionen', 'Kommt in Schritt 9'],
     ['Netz', 'Kommt in Schritt 11'],
     ['Einstellungen', 'Darstellung'],

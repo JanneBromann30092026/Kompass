@@ -301,7 +301,7 @@ test('contract status, editing with validation, archive and delete', async ({ pa
   await expect(page.getByTestId('contact-email')).toHaveAttribute('href', 'mailto:ben@example.com');
 
   // Archive instead of delete: hidden from the list, kept in the archive.
-  await page.getByRole('button', { name: 'Aktionen' }).click();
+  await page.getByRole('button', { name: 'Aktionen', exact: true }).click();
   await page.getByRole('menuitem', { name: 'Archivieren' }).click();
   await expect(page.getByTestId('archived-banner')).toBeVisible();
   await page.getByTestId('file-back').click();
@@ -314,7 +314,7 @@ test('contract status, editing with validation, archive and delete', async ({ pa
   await page.getByTestId('customer-row').filter({ hasText: 'Ben Hartmann' }).click();
 
   // Deleting removes the file with everything that belongs to it.
-  await page.getByRole('button', { name: 'Aktionen' }).click();
+  await page.getByRole('button', { name: 'Aktionen', exact: true }).click();
   await page.getByRole('menuitem', { name: 'Endgültig löschen' }).click();
   await page.getByRole('alertdialog').getByRole('button', { name: 'Endgültig löschen' }).click();
   await expect(page.getByTestId('customers-page')).toBeVisible();
