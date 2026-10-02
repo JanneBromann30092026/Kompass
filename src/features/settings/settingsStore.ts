@@ -20,6 +20,8 @@ const schemas = {
   sidebarCollapsed: z.boolean(),
   // Security (needed before unlocking, therefore a plain setting)
   lockAfterMinutes: z.literal(LOCK_AFTER_MINUTES),
+  // Conversations: the note that dictation runs through Apple was shown once
+  dictationNoticeSeen: z.boolean(),
   // Developer
   devMode: z.boolean(),
 };
@@ -32,6 +34,7 @@ export const SETTINGS_DEFAULTS: SettingsValues = {
   reduceMotion: false,
   sidebarCollapsed: false,
   lockAfterMinutes: DEFAULT_LOCK_AFTER_MINUTES,
+  dictationNoticeSeen: false,
   devMode: false,
 };
 

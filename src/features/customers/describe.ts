@@ -33,6 +33,7 @@ const CONSENT_LABELS: Record<string, string> = {
 /** Label of a changed field, e.g. "Vertrag BU" or "Werbung / Seminar-Einladung". */
 export function fieldLabel(entity: HistoryEntity, path: string): string {
   const [head = '', second = '', third = ''] = path.split('.');
+  if (entity === 'conversation' && head === 'title') return de.conversations.fields.title;
   if (entity !== 'customer') return ((h as Record<string, unknown>)[head] as string) ?? path;
   if (head === 'contracts') {
     return h.contract(PRODUCT_LINE_INFO[second as ProductLine]?.name ?? second);

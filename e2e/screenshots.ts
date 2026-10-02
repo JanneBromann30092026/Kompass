@@ -343,6 +343,79 @@ async function customerReminders(page: Page) {
   await scrollToTestId(page, 'file-reminders');
 }
 
+/** Safari offers speech recognition: a fake that "hears" one sentence. */
+function fakeSpeechScript() {
+  class FakeRecognition {
+    lang = '';
+    continuous = false;
+    interimResults = false;
+    onresult: ((event: unknown) => void) | null = null;
+    onerror: ((event: unknown) => void) | null = null;
+    onend: (() => void) | null = null;
+    start() {
+      setTimeout(() => {
+        const interim = Object.assign([{ transcript: 'Übernahme ist zugesagt' }], {
+          isFinal: false,
+        });
+        this.onresult?.({ resultIndex: 0, results: Object.assign([interim], { length: 1 }) });
+      }, 200);
+    }
+    stop() {
+      this.onend?.();
+    }
+    abort() {}
+  }
+  Object.assign(window, {
+    SpeechRecognition: FakeRecognition,
+    webkitSpeechRecognition: FakeRecognition,
+  });
+}
+
+async function customerPrepare(page: Page) {
+  await openCustomer(page, 'Ben');
+  await page.getByTestId('hero-prepare').click();
+  await page.getByTestId('preparation').waitFor();
+}
+
+async function customerPrepareFull(page: Page) {
+  await customerPrepare(page);
+  await page.getByTestId('prep-fullscreen').click();
+}
+
+async function customerConversation(page: Page) {
+  await openCustomer(page, 'Ben');
+  await page.getByTestId('hero-record').click();
+  await page.getByTestId('conversation-form').waitFor();
+  await page.getByRole('button', { name: 'Beratung', exact: true }).click();
+  await page.getByTestId('conversation-participants').fill('Ben');
+  await page
+    .getByTestId('conversation-discussed')
+    .fill('Ausbildungsende im Januar, Übernahme zugesagt. BU-Angebot nochmals durchgesprochen.');
+  await page.getByTestId('conversation-results').focus();
+  await setKeyboard(page, true);
+}
+
+async function customerDictation(page: Page) {
+  await openCustomer(page, 'Ben');
+  await page.getByTestId('hero-record').click();
+  await page.getByTestId('conversation-discussed').focus();
+  await page.getByTestId('dictation-button').click();
+  await page.getByTestId('dictation-notice-confirm').waitFor();
+}
+
+async function customerDictationListening(page: Page) {
+  await customerDictation(page);
+  await page.getByTestId('dictation-notice-confirm').click();
+  await page.getByTestId('dictation-interim').waitFor();
+}
+
+async function customerConversations(page: Page) {
+  await openCustomer(page, 'Leon');
+  const section = page.getByTestId('file-conversations');
+  await section.getByTestId('conversation-entry').first().getByRole('button').first().click();
+  await scrollToTestId(page, 'file-conversations');
+}
+
 /** Starts the question catalogue without the draft of the previous shot. */
 async function freshWizard(page: Page) {
   await page.getByTestId('wizard').waitFor();
@@ -449,6 +522,12 @@ const SHOTS: Shot[] = [
   { route: '/customers', name: 'customers-need-recheck', prepare: customerNeedRecheck },
   { route: '/customers', name: 'customers-hooks', prepare: customerHooks, split: true },
   { route: '/customers', name: 'customers-reminders', prepare: customerReminders },
+  { route: '/customers', name: 'customers-prepare', prepare: customerPrepare, split: true },
+  { route: '/customers', name: 'customers-prepare-full', prepare: customerPrepareFull },
+  { route: '/customers', name: 'customers-conversation', prepare: customerConversation },
+  { route: '/customers', name: 'customers-dictation', prepare: customerDictation },
+  { route: '/customers', name: 'customers-dictation-on', prepare: customerDictationListening },
+  { route: '/customers', name: 'customers-conversations', prepare: customerConversations },
   {
     route: '/customers',
     name: 'reminders-list',
@@ -544,6 +623,7 @@ try {
       serviceWorkers: 'block',
     });
     await context.addInitScript(simulatedKeyboardScript);
+    await context.addInitScript(fakeSpeechScript);
     const page = await context.newPage();
     const wide = (variant.options.viewport?.width ?? 0) >= 900;
     const split = variant.name.startsWith('split');

@@ -7,9 +7,9 @@ import {
   ArrowLeft,
   Briefcase,
   ClipboardList,
+  MessageSquarePlus,
   Contact,
   HandCoins,
-  MessagesSquare,
   Pencil,
   ShieldCheck,
   Tags,
@@ -45,6 +45,7 @@ import {
 } from '@/data/reference';
 import type { Customer } from '@/data/schemas';
 import { useDataStore } from '@/data/store';
+import { ConversationsSection } from '@/features/conversations/ConversationsSection';
 import { HooksSection, NeedsSection, useCustomerNeeds } from '@/features/needs';
 import { RemindersSection } from '@/features/reminders/RemindersSection';
 import { de } from '@/i18n/de';
@@ -59,7 +60,7 @@ import { ContractsCard } from './ContractsCard';
 import { HistoryCard } from './HistoryCard';
 import { LifeEventsCard } from './LifeEventsCard';
 import { OpenPointsCard } from './OpenPointsCard';
-import { DetailList, FileSection, LaterSection } from './parts';
+import { DetailList, FileSection } from './parts';
 import { SectionEditor, type FieldGroup } from './SectionEditor';
 
 const t = de.customers;
@@ -145,6 +146,7 @@ function Hero({
   today: string;
   onEdit: () => void;
 }) {
+  const navigate = useNavigate();
   const { age, approximate } = ageInfo(customer, today);
   const birth = customer.birthDate
     ? t.file.birthday(formatCalendarDate(customer.birthDate))
@@ -201,6 +203,26 @@ function Hero({
           />
         </div>
         <ContactActions customer={customer} />
+        <div className="flex flex-wrap gap-2">
+          <Button
+            size="sm"
+            variant="secondary"
+            icon={ClipboardList}
+            onClick={() => void navigate(`/customers/${customer.id}/prepare`)}
+            data-testid="hero-prepare"
+          >
+            {de.conversations.prep.title}
+          </Button>
+          <Button
+            size="sm"
+            variant="secondary"
+            icon={MessageSquarePlus}
+            onClick={() => void navigate(`/customers/${customer.id}/conversations/new`)}
+            data-testid="hero-record"
+          >
+            {de.conversations.record}
+          </Button>
+        </div>
       </div>
     </Surface>
   );
@@ -446,12 +468,7 @@ function FileContent({ customer }: { customer: Customer }) {
           )}
         </FileSection>
 
-        <LaterSection
-          title={s.conversations}
-          icon={MessagesSquare}
-          text={t.file.comingSoon.conversations}
-          step={7}
-        />
+        <ConversationsSection customerId={customer.id} />
 
         <HistoryCard customerId={customer.id} />
       </motion.div>

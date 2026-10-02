@@ -31,6 +31,9 @@ const QuestionnairePage = lazy(() => knowledge().then((m) => ({ default: m.Quest
 const RemindersPage = lazy(() =>
   import('@/features/reminders').then((m) => ({ default: m.RemindersPage })),
 );
+const conversations = () => import('@/features/conversations');
+const PreparationPage = lazy(() => conversations().then((m) => ({ default: m.PreparationPage })));
+const ConversationPage = lazy(() => conversations().then((m) => ({ default: m.ConversationPage })));
 const customers = () => import('@/features/customers');
 const CustomersPage = lazy(() => customers().then((m) => ({ default: m.CustomersPage })));
 const CustomerFilePage = lazy(() => customers().then((m) => ({ default: m.CustomerFilePage })));
@@ -76,6 +79,12 @@ function AnimatedRoutes() {
             <Route path="/customers" element={<CustomersPage />} />
             <Route path="/customers/new" element={<NewCustomerPage />} />
             <Route path="/customers/:id" element={<CustomerFilePage />} />
+            <Route path="/customers/:id/prepare" element={<PreparationPage />} />
+            <Route path="/customers/:id/conversations/new" element={<ConversationPage />} />
+            <Route
+              path="/customers/:id/conversations/:conversationId"
+              element={<ConversationPage />}
+            />
             <Route path="/reminders" element={<RemindersPage />} />
             <Route path="/campaigns" element={<ComingSoonPage page="campaigns" />} />
             <Route path="/network" element={<ComingSoonPage page="network" />} />

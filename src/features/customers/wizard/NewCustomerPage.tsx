@@ -14,6 +14,7 @@ import {
   useKeyboardInset,
 } from '@/components/ui';
 import { useToday } from '@/app/hooks/useToday';
+import { useDraftSaver } from '@/app/hooks/useDraftSaver';
 import { useFocusModeRequest } from '@/app/shell/focusMode';
 import { needsParentalConsent } from '@/core/customers/age';
 import {
@@ -50,34 +51,6 @@ function restore(): WizardState | null {
 const hasContent = (state: WizardState) =>
   state.step > 0 ||
   Object.values(state.values).some((value) => value !== undefined && value !== '');
-
-/**
- * Saves the draft encrypted after every change; one write at a time, the latest state wins.
- * Returns a function that stops saving and resolves once pending writes are done.
- */
-function useDraftSaver(state: WizardState, enabled: boolean): () => Promise<void> {
-  const chain = useRef<Promise<void>>(Promise.resolve());
-  const latest = useRef<WizardState | null>(null);
-  const stopped = useRef(false);
-  useEffect(() => {
-    if (!enabled || stopped.current) return;
-    latest.current = state;
-    chain.current = chain.current.then(async () => {
-      const current = latest.current;
-      latest.current = null;
-      if (!current || stopped.current) return;
-      try {
-        await draftsRepo.save(NEW_CUSTOMER_DRAFT_ID, 'newCustomer', current.step, current.values);
-      } catch {
-        // Locked meanwhile: the key is gone, the last saved state remains.
-      }
-    });
-  }, [state, enabled]);
-  return () => {
-    stopped.current = true;
-    return chain.current;
-  };
-}
 
 function Card({
   card,
@@ -298,7 +271,7 @@ export function NewCustomerPage() {
   const [creating, setCreating] = useState(false);
   const [discarding, setDiscarding] = useState(false);
   const scroller = useRef<HTMLDivElement>(null);
-  const stopSaving = useDraftSaver(state, hasContent(state));
+  const stopSaving = useDraftSaver(NEW_CUSTOMER_DRAFT_ID, 'newCustomer', state, hasContent(state));
   const { step, values } = state;
   const generated = unansweredOpenPoints(values, QUESTIONNAIRE);
 
