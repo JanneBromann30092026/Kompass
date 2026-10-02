@@ -19,9 +19,11 @@ import { NEED_RULES } from './needRules';
 import { PRODUCT_LINE_INFO } from './productLines';
 import { TOPIC_INFO } from './topics';
 
+export { HOOK_TEMPLATES } from './hooks';
 export { LIFE_EVENT_INFO } from './lifeEvents';
 export { LIFE_PHASE_INFO } from './lifePhases';
 export { NEED_RULES, PRIORITIZATION, RULE_DISCLAIMER } from './needRules';
+export { NEED_REASON_TEXTS, reasonText } from './needTexts';
 export { PRODUCT_LINE_INFO } from './productLines';
 export { QUESTIONNAIRE } from './questionnaire';
 export { TOPIC_INFO } from './topics';

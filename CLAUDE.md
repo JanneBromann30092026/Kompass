@@ -108,7 +108,7 @@ Touch-first (iPad), wie Synapse:
 - [x] 2 Datenbank, Datenmodell & Verschlüsselung
 - [x] 3 Fachwissen & Demo-Daten
 - [x] 4 Kundenverwaltung
-- [ ] 5 Bedarfs-Engine & Gesprächsaufhänger
+- [x] 5 Bedarfs-Engine & Gesprächsaufhänger
 - [ ] 6 Wiedervorlagen
 - [ ] 7 Gespräche & Gesprächsvorbereitung
 - [ ] 8 Dashboard & Pipeline
@@ -176,4 +176,10 @@ Touch-first (iPad), wie Synapse:
   - Kürzel: `n` neuer Kunde (überall außer in Dialogen/Textfeldern), `/` Suche (Kunden, Wissen). Die Suchanfrage der Kundenliste wird beim Sperren gelöscht (kann Namen enthalten).
   - Wissen: Die Platzhalter „Kunden mit …“ zeigen jetzt die passenden aktiven Kunden (Sparte: Status außer offen/nein/nicht relevant; Thema: abgeschlossene Sparten des Themas).
   - „Nächste Wiedervorlage“ in der Liste ist bis Schritt 6 ein Platzhalter („–“).
-
+- Schritt 5 (Bedarfs-Engine & Gesprächsaufhänger):
+  - Neues Kundenfeld `employment` (angestellt/selbständig/verbeamtet), weil BU, bAV und VL davon abhängen; im Fragenkatalog bei „Beruf“. Demo-Kunden ergänzt (Beschäftigung, VL/bAV vom Arbeitgeber, Hobbys/Fahrzeuge als Antworten).
+  - Engine in src/core/needs: `needFacts` (Fakten aus Akte + Ereignissen; Ausbildungsbeginn/-ende aus den Feldern zählen als Ereignisse, Minderjährige bekommen den 18. Geburtstag als Ereignis), `assessNeeds` (je Sparte jetzt/später/nicht sinnvoll/abgedeckt, Art neu/anpassen/in Arbeit, Begründungs-Codes, `check` bei „prüfen“). Ereignisfenster: 6 Monate zurück, 18 Monate voraus. Vertragsstatus vor Regel: abgeschlossen → abgedeckt oder Anpassung (BU-Nachversicherung nach Gehaltssprung/Heirat/Kind/Immobilie/Ausbildungsende, Hausrat nach Umzug), geplant/angeboten → jetzt, abgelehnt → später zum nächsten Anlass bzw. endgültig, über Eltern → später (Ausbildungsende bzw. 18.), nicht relevant → höchstens später. Minderjährige: jeder „jetzt“-Bedarf mit Hinweis Zustimmung der Eltern. Sortierung: Zeitpunkt, Priorität, Spartenreihenfolge – nie Potenzial.
+  - Die 12 Testkunden sind Referenzfälle (engine.test.ts, an zwei Stichtagen). Abweichung: Hausrat bei Kaya ist nach dem frischen Umzug „jetzt anpassen“ statt nur „später zusammenlegen“ (im Test begründet).
+  - Begründungstexte (`NEED_REASON_TEXTS`) und Gesprächsaufhänger-Vorlagen (`HOOK_TEMPLATES`, Platzhalter {month} {months} {age} {event}) liegen als Daten in src/data/reference. Auswahl: Punkte je Bedarf/Ereignis/Phase, höchstens ein Aufhänger je Sparte und Ereignis, 3–5 je Kunde (Lückenfüller allgemein); abgelehnte Bedarfe liefern keine Aufhänger. Einwände aus `NEED_RULES[line].objections`.
+  - Entscheidungen: ein Datensatz je Kunde und Sparte in `needs` (Status accepted/dismissed, Quelle rule/manual), geschrieben nur über `needDecisionsRepo` (übernehmen, ablehnen, ändern mit Zeitpunkt/Priorität/eigener Begründung, beibehalten, zurücksetzen = löschen). Feld `basis` = Fingerabdruck des Vorschlags (Zeitpunkt, Art, Begründungen); weicht der aktuelle ab → „Bedarf neu prüfen“ (Neu bewerten = Entscheidung löschen, Beibehalten = neuer Fingerabdruck). Der Verlauf blendet `basis` aus.
+  - UI in src/features/needs (Abschnitte „Bedarf“ und „Gesprächsaufhänger“ in der Akte, direkt unter den Verträgen). „Nicht sinnvoll“ und „Abgelehnt“ starten eingeklappt, Abgedecktes als Chips. Beim Übernehmen kurzer Erfolgs-Glow (Opacity, daher auch bei reduzierter Bewegung dezent). Kopieren per Clipboard-API (iPad: im Tipp).

@@ -14,6 +14,9 @@ const t = de.customers.file;
 const VISIBLE = 5;
 const SUMMARY_FIELDS = 3;
 
+/** Internal fields that mean nothing to the reader (fingerprint of a need suggestion). */
+const HIDDEN_PATHS = new Set(['basis']);
+
 /** Values that say nothing when a record is created ("Erledigt: nein", empty lists). */
 const isBlank = (value: unknown) =>
   value === false || value === '' || (Array.isArray(value) && value.length === 0);
@@ -26,7 +29,11 @@ function summaryOf(entry: HistoryEntry, labels: string[]): string {
       const value = change?.to ?? change?.from;
       return value === undefined ? undefined : describeChange(entry.entity, { path, to: value }).to;
     };
-    const parts = [pick('title') ?? pick('kind'), pick('dueDate') ?? pick('date')].filter(Boolean);
+    const parts = [
+      pick('title') ?? pick('kind') ?? pick('productLine'),
+      pick('dueDate') ?? pick('date') ?? pick('timing'),
+      pick('status'),
+    ].filter(Boolean);
     if (parts.length > 0) return parts.join(' · ');
   }
   return labels.slice(0, SUMMARY_FIELDS).join(', ') + (labels.length > SUMMARY_FIELDS ? ' …' : '');
@@ -35,6 +42,7 @@ function summaryOf(entry: HistoryEntry, labels: string[]): string {
 function Entry({ entry }: { entry: HistoryEntry }) {
   const [open, setOpen] = useState(false);
   const changes = entry.changes
+    .filter((change) => !HIDDEN_PATHS.has(change.path))
     .filter((change) => entry.action === 'updated' || !isBlank(change.to ?? change.from))
     .map((change) => describeChange(entry.entity, change));
   const names = [...new Set(changes.map((c) => c.label))];

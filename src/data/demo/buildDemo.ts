@@ -7,6 +7,7 @@ import { addDays, addMonths, ageOn, daysBetween, firstOfMonth, shiftYearMonth } 
 import { deterministicUuid } from '@/core/deterministicId';
 import { applyFieldChanges, diffRecords, type FieldChange } from '@/core/history';
 import { LIFE_EVENT_INFO } from '../reference';
+import { customerSchema } from '../schemas';
 import type {
   Conversation,
   Customer,
@@ -82,6 +83,14 @@ function shiftCustomer(
     },
     parentalConsent: consent(input.parentalConsent),
     openPoints: input.openPoints?.map((point) => shiftTextDates(point, days)),
+    answers: input.answers
+      ? Object.fromEntries(
+          Object.entries(input.answers).map(([key, text]) => [
+            key,
+            text ? shiftTextDates(text, days) : text,
+          ]),
+        )
+      : undefined,
   };
   return JSON.parse(JSON.stringify(shifted)) as CustomerInput;
 }
@@ -162,7 +171,8 @@ export function buildDemoCustomer(source: DemoCustomer, options: BuildOptions): 
   }));
   const updatedAt = changes.at(-1)?.at ?? createdAt;
 
-  const customer = {
+  // Parsed: complete record with all defaults (as stored by the repository).
+  const customer = customerSchema.parse({
     ...shiftCustomer(
       source.customer,
       days,
@@ -172,7 +182,7 @@ export function buildDemoCustomer(source: DemoCustomer, options: BuildOptions): 
     number: options.number,
     createdAt,
     updatedAt,
-  } as Customer;
+  });
   // State at the first contact: the later changes undone.
   const initial = changes.reduceRight(
     (record, change) => applyFieldChanges(record, change.changes, 'from'),

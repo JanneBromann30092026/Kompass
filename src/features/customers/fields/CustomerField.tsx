@@ -4,6 +4,7 @@ import { normalizePhone } from '@/core/customers/phone';
 import {
   CONTACT_CHANNELS,
   CONTRACT_STATUSES,
+  EMPLOYMENTS,
   HOUSING,
   LIFE_PHASES,
   MARITAL_STATUSES,
@@ -18,6 +19,7 @@ import {
 import {
   CONTACT_CHANNEL_LABELS,
   CONTRACT_STATUS_LABELS,
+  EMPLOYMENT_LABELS,
   HOUSING_LABELS,
   LIFE_PHASE_INFO,
   MARITAL_STATUS_LABELS,
@@ -465,6 +467,17 @@ export function CustomerField({
           options={LIFE_PHASES}
           labelOf={(v) => LIFE_PHASE_INFO[v].name}
           onChange={(lifePhase) => onChange({ lifePhase })}
+          error={error}
+        />
+      );
+    case 'employment':
+      return (
+        <EnumSelect
+          label={label ?? f.employment}
+          value={values.employment}
+          options={EMPLOYMENTS}
+          labelOf={(v) => EMPLOYMENT_LABELS[v]}
+          onChange={(employment) => onChange({ employment })}
           error={error}
         />
       );

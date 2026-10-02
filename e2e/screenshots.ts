@@ -253,6 +253,64 @@ async function customerHistory(page: Page) {
   await history.evaluate((element) => element.scrollIntoView({ block: 'start' }));
 }
 
+async function scrollToTestId(page: Page, testId: string, block: 'start' | 'center' = 'start') {
+  await page
+    .getByTestId(testId)
+    .first()
+    .evaluate((element, position) => element.scrollIntoView({ block: position }), block);
+}
+
+async function customerNeeds(page: Page) {
+  await openCustomer(page, 'Ben');
+  await scrollToTestId(page, 'file-needs');
+}
+
+async function customerNeedObjections(page: Page) {
+  await openCustomer(page, 'Ben');
+  await page.getByTestId('need-card-bu').getByTestId('need-objections').click();
+  await scrollToTestId(page, 'need-card-bu');
+}
+
+async function customerNeedAccept(page: Page) {
+  await openCustomer(page, 'Ben');
+  const card = page.getByTestId('need-card-accident');
+  await scrollToTestId(page, 'need-card-accident', 'center');
+  await card.getByTestId('need-accept').click();
+  await card.and(page.locator('[data-state="accepted"]')).waitFor();
+}
+
+async function customerNeedEdit(page: Page) {
+  await openCustomer(page, 'Ben');
+  await page.getByTestId('need-card-fundSavings').getByTestId('need-adjust').click();
+  await page.getByTestId('need-editor').waitFor();
+  await page.getByRole('radio', { name: 'Später', exact: true }).click();
+  await page.getByTestId('need-reason').fill('Erst nach der Übernahme im Januar besprechen');
+}
+
+async function customerNeedRecheck(page: Page) {
+  await openCustomer(page, 'Ben');
+  const card = page.getByTestId('need-card-capitalFormation');
+  await card.getByTestId('need-accept').click();
+  await card.and(page.locator('[data-state="accepted"]')).waitFor();
+  await page
+    .getByTestId('file-situation')
+    .getByRole('button', { name: /bearbeiten/ })
+    .click();
+  await page
+    .getByRole('radiogroup', { name: 'Arbeitgeber zahlt VL' })
+    .getByRole('radio', { name: 'nein', exact: true })
+    .click();
+  await page.getByRole('button', { name: 'Speichern' }).click();
+  await card.getByTestId('need-recheck').waitFor();
+  await scrollToTestId(page, 'need-card-capitalFormation', 'center');
+  await page.waitForTimeout(2500); // let the toasts disappear
+}
+
+async function customerHooks(page: Page) {
+  await openCustomer(page, 'Ben');
+  await scrollToTestId(page, 'file-hooks', 'center');
+}
+
 /** Starts the question catalogue without the draft of the previous shot. */
 async function freshWizard(page: Page) {
   await page.getByTestId('wizard').waitFor();
@@ -352,6 +410,12 @@ const SHOTS: Shot[] = [
   { route: '/customers', name: 'customers-edit', prepare: customerEdit },
   { route: '/customers', name: 'customers-contract', prepare: customerContract },
   { route: '/customers', name: 'customers-history', prepare: customerHistory },
+  { route: '/customers', name: 'customers-needs', prepare: customerNeeds, split: true },
+  { route: '/customers', name: 'customers-need-objections', prepare: customerNeedObjections },
+  { route: '/customers', name: 'customers-need-accept', prepare: customerNeedAccept },
+  { route: '/customers', name: 'customers-need-edit', prepare: customerNeedEdit },
+  { route: '/customers', name: 'customers-need-recheck', prepare: customerNeedRecheck },
+  { route: '/customers', name: 'customers-hooks', prepare: customerHooks, split: true },
   { route: '/customers/new', name: 'customers-new', prepare: wizardStart, split: true },
   { route: '/customers/new', name: 'customers-new-job', prepare: wizardJob },
   { route: '/customers/new', name: 'customers-new-summary', prepare: wizardSummary, scroll: true },

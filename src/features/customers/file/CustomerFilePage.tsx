@@ -14,7 +14,6 @@ import {
   Pencil,
   ShieldCheck,
   Tags,
-  Target,
   Trash2,
   UserRound,
 } from 'lucide-react';
@@ -37,6 +36,7 @@ import { ANSWER_KEYS, type AnswerKey } from '@/data/domain';
 import { customersRepo } from '@/data/repositories';
 import {
   CONTACT_CHANNEL_LABELS,
+  EMPLOYMENT_LABELS,
   HOUSING_LABELS,
   LIFE_PHASE_INFO,
   MARITAL_STATUS_LABELS,
@@ -46,6 +46,7 @@ import {
 } from '@/data/reference';
 import type { Customer } from '@/data/schemas';
 import { useDataStore } from '@/data/store';
+import { HooksSection, NeedsSection, useCustomerNeeds } from '@/features/needs';
 import { de } from '@/i18n/de';
 import { spring } from '@/styles/motion';
 import { CustomerAvatar } from '../components/CustomerAvatar';
@@ -93,6 +94,7 @@ const EDITORS: Record<EditorKey, { groups: FieldGroup[]; description?: string }>
         fields: [
           'lifePhase',
           'occupation',
+          'employment',
           'trainingStart',
           'trainingEnd',
           'employerVl',
@@ -212,6 +214,7 @@ function FileContent({ customer }: { customer: Customer }) {
   const edit = (key: EditorKey) => () => setEditing(key);
   const showParents = needsParentalConsent(customer, today) || customer.parentalConsent;
   const answers = ANSWER_KEYS.filter((key) => customer.answers[key]);
+  const { views, hooks } = useCustomerNeeds(customer);
 
   const toggleArchive = async () => {
     const next = !customer.archived;
@@ -271,6 +274,8 @@ function FileContent({ customer }: { customer: Customer }) {
 
         <Hero customer={customer} today={today} onEdit={edit('person')} />
         <ContractsCard customer={customer} />
+        <NeedsSection customer={customer} views={views} />
+        <HooksSection hooks={hooks} />
 
         <div className="grid gap-4 wide:grid-cols-2">
           <FileSection
@@ -335,6 +340,10 @@ function FileContent({ customer }: { customer: Customer }) {
                   value: customer.lifePhase && LIFE_PHASE_INFO[customer.lifePhase].name,
                 },
                 { label: f.occupation, value: customer.occupation },
+                {
+                  label: f.employment,
+                  value: customer.employment && EMPLOYMENT_LABELS[customer.employment],
+                },
                 {
                   label: f.trainingStart,
                   value: customer.trainingStart && formatCalendarDate(customer.trainingStart),
@@ -436,8 +445,7 @@ function FileContent({ customer }: { customer: Customer }) {
           )}
         </FileSection>
 
-        <div className="grid gap-4 wide:grid-cols-3">
-          <LaterSection title={s.needs} icon={Target} text={t.file.comingSoon.needs} step={5} />
+        <div className="grid gap-4 wide:grid-cols-2">
           <LaterSection
             title={s.reminders}
             icon={CalendarClock}

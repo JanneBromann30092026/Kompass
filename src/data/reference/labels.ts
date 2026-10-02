@@ -3,6 +3,7 @@ import type {
   CampaignKind,
   ContactChannel,
   ContractStatus,
+  Employment,
   Housing,
   MaritalStatus,
   NeedStatus,
@@ -30,6 +31,12 @@ export const HOUSING_LABELS = {
   rent: 'Miete',
   owned: 'Eigentum',
 } as const satisfies Record<Housing, string>;
+
+export const EMPLOYMENT_LABELS = {
+  employee: 'angestellt',
+  selfEmployed: 'selbständig',
+  civilServant: 'verbeamtet (auch angehend)',
+} as const satisfies Record<Employment, string>;
 
 export const MARITAL_STATUS_LABELS = {
   single: 'ledig',
@@ -67,7 +74,7 @@ export const NEED_TIMING_LABELS = {
 export const NEED_STATUS_LABELS = {
   open: 'offen',
   accepted: 'übernommen',
-  dismissed: 'verworfen',
+  dismissed: 'abgelehnt',
   done: 'erledigt',
 } as const satisfies Record<NeedStatus, string>;
 

@@ -16,6 +16,7 @@ export type FieldKey =
   | 'housing'
   | 'lifePhase'
   | 'occupation'
+  | 'employment'
   | 'trainingStart'
   | 'trainingEnd'
   | 'employerVl'
