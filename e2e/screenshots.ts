@@ -191,7 +191,8 @@ async function devDemo(page: Page) {
 
 /** Demo data for the customer shots (also in a filtered run). */
 async function ensureDemo(page: Page) {
-  await page.goto(`${PREVIEW_URL}#/dev/ui`);
+  // Split View runs only some shots: the developer mode may still be off.
+  await enableDevMode(page);
   const section = page.getByTestId('dev-section-demo');
   await section.waitFor();
   if ((await section.getByTestId('demo-count').textContent()) === '0') {
