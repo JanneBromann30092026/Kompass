@@ -3,9 +3,11 @@
  * due dates, birthdays and ages stay realistic whenever the demo is loaded. Pure – the
  * import (src/data/repositories/demoRepo.ts) encrypts and stores the result.
  */
-import { addDays, addMonths, ageOn, daysBetween, firstOfMonth, shiftYearMonth } from '@/core/dates';
+import { addDays, daysBetween, shiftYearMonth } from '@/core/dates';
 import { deterministicUuid } from '@/core/deterministicId';
 import { applyFieldChanges, diffRecords, type FieldChange } from '@/core/history';
+import { deriveReminders, type ReminderFacts } from '@/core/reminders/derive';
+import { LIFE_EVENT_KINDS, type LifeEventKind } from '../domain';
 import { LIFE_EVENT_INFO } from '../reference';
 import { customerSchema } from '../schemas';
 import type {
@@ -114,46 +116,47 @@ function historyEntry(
   };
 }
 
-/** Reminders the rules of step 6 would derive: end of training, 18th birthday. */
-function derivedReminders(
-  customer: Customer,
+type ReminderFields = Omit<Reminder, 'id' | 'customerId' | 'createdAt' | 'updatedAt'>;
+
+/** The life event a demo reminder of kind "lifeEvent" refers to (by its title). */
+function eventByTitle(title: string): LifeEventKind | undefined {
+  return LIFE_EVENT_KINDS.find((kind) => LIFE_EVENT_INFO[kind].name === title);
+}
+
+/**
+ * Reminders as the rules derive them (src/core/reminders). An explicit demo reminder of the
+ * same rule replaces the generic one (own to-do, possibly postponed) but keeps its key, so
+ * the automatic sync creates no duplicate.
+ */
+function demoReminders(
+  explicit: ReminderFields[],
+  facts: Omit<ReminderFacts, 'reminders'>,
   today: string,
-): Omit<Reminder, 'id' | 'customerId' | 'createdAt' | 'updatedAt'>[] {
-  const result: Omit<Reminder, 'id' | 'customerId' | 'createdAt' | 'updatedAt'>[] = [];
-  if (customer.trainingEnd) {
-    const end = LIFE_EVENT_INFO.trainingEnd;
+): ReminderFields[] {
+  const candidates = deriveReminders({ ...facts, reminders: [] }, today);
+  const used = new Set<string>();
+  const result: ReminderFields[] = explicit.map((reminder) => {
+    const match = candidates.find(
+      (candidate) =>
+        !used.has(candidate.ruleKey) &&
+        candidate.kind === reminder.kind &&
+        candidate.event === reminder.event,
+    );
+    if (!match) return reminder;
+    used.add(match.ruleKey);
+    return { ...reminder, ruleKey: match.ruleKey, dateToCheck: match.dateToCheck };
+  });
+  for (const candidate of candidates) {
+    if (used.has(candidate.ruleKey) || !candidate.creatable) continue;
     result.push({
-      dueDate: firstOfMonth(addMonths(`${customer.trainingEnd}-01`, -3)),
-      kind: 'trainingEnd',
-      title: customer.lifePhase === 'studies' ? 'Studienende' : end.name,
-      todo: end.talkingPoints.join(', '),
-      dateToCheck: false,
+      dueDate: candidate.dueDate,
+      kind: candidate.kind,
+      event: candidate.event,
+      title: candidate.title,
+      todo: candidate.todo,
+      dateToCheck: candidate.dateToCheck,
       done: false,
-    });
-  }
-  const eighteenth = LIFE_EVENT_INFO.eighteenthBirthday;
-  const todo = eighteenth.talkingPoints.join(', ');
-  if (customer.birthDate && ageOn(customer.birthDate, today) < 18) {
-    result.push({
-      dueDate: addMonths(customer.birthDate, 18 * 12),
-      kind: 'eighteenthBirthday',
-      title: eighteenth.name,
-      todo,
-      dateToCheck: false,
-      done: false,
-    });
-  } else if (
-    !customer.birthDate &&
-    customer.birthYear &&
-    Number(today.slice(0, 4)) - customer.birthYear < 18
-  ) {
-    result.push({
-      dueDate: `${customer.birthYear + 18}-01-01`,
-      kind: 'eighteenthBirthday',
-      title: eighteenth.name,
-      todo,
-      dateToCheck: true,
-      done: false,
+      ruleKey: candidate.ruleKey,
     });
   }
   return result;
@@ -225,17 +228,19 @@ export function buildDemoCustomer(source: DemoCustomer, options: BuildOptions): 
   });
 
   const lastContact = [since, ...conversations.map((c) => c.date)].sort().at(-1) ?? since;
-  const reminderBase = [
-    ...source.reminders.map((reminder) => ({
+  const reminderBase = demoReminders(
+    source.reminders.map((reminder) => ({
       dueDate: addDays(reminder.dueDate, days),
       kind: reminder.kind,
+      event: reminder.kind === 'lifeEvent' ? eventByTitle(reminder.title) : undefined,
       title: reminder.title,
       todo: shiftTextDates(reminder.todo, days),
       dateToCheck: false,
       done: false,
     })),
-    ...derivedReminders(customer, today),
-  ];
+    { customer, lifeEvents, conversations },
+    today,
+  );
   const reminders: Reminder[] = reminderBase.map((reminder, index) => ({
     ...reminder,
     id: linked('reminder', index),
