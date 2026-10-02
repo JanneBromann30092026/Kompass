@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { Pencil, type LucideIcon } from 'lucide-react';
-import { Badge, cn, IconButton, Surface } from '@/components/ui';
+import { cn, IconButton, Surface } from '@/components/ui';
 import { de } from '@/i18n/de';
 
 const t = de.customers.file;
@@ -70,36 +70,5 @@ export function DetailList({ items }: { items: DetailItem[] }) {
         </div>
       ))}
     </dl>
-  );
-}
-
-/** Where a later step adds its part of the file. */
-export function LaterSection({
-  title,
-  icon: Icon,
-  text,
-  step,
-  testId,
-}: {
-  title: string;
-  icon: LucideIcon;
-  text: string;
-  step: number;
-  testId?: string;
-}) {
-  return (
-    <div
-      className="flex flex-col gap-2 rounded-xl border border-dashed border-line-strong p-5"
-      data-testid={testId}
-    >
-      <h2 className="flex items-center gap-2 text-lg font-semibold tracking-tight text-fg">
-        <Icon size={20} aria-hidden className="text-fg-muted" />
-        {title}
-      </h2>
-      <p className="text-sm text-fg-secondary">{text}</p>
-      <Badge tone="amber" className="self-start">
-        {de.comingSoon.badge(step)}
-      </Badge>
-    </div>
   );
 }

@@ -15,7 +15,7 @@ export const PREPARATION_LIMITS = {
   needs: 6,
   hooks: 3,
   objectionLines: 3,
-  objectionsPerLine: 2,
+  objectionsPerLine: 1,
   /** Reminders due up to this many days ahead (overdue ones always). */
   reminderDays: 30,
 } as const;

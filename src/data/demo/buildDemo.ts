@@ -135,11 +135,12 @@ export function noteSections(notes: string): Partial<Record<(typeof SECTIONS)[st
     }
     (fields[current] ??= []).push(line);
   }
-  return Object.fromEntries(
-    Object.entries(fields)
-      .map(([key, lines]) => [key, lines.join('\n').trim()])
-      .filter(([, text]) => text !== ''),
-  );
+  const sections: Partial<Record<(typeof SECTIONS)[string], string>> = {};
+  for (const [key, lines] of Object.entries(fields) as [(typeof SECTIONS)[string], string[]][]) {
+    const text = lines.join('\n').trim();
+    if (text) sections[key] = text;
+  }
+  return sections;
 }
 
 type ReminderFields = Omit<Reminder, 'id' | 'customerId' | 'createdAt' | 'updatedAt'>;
