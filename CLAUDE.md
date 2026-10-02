@@ -107,7 +107,7 @@ Touch-first (iPad), wie Synapse:
 - [x] 1 Fundament: Setup, PWA, Deployment, Design-System & Shell (aus Synapse)
 - [x] 2 Datenbank, Datenmodell & Verschlüsselung
 - [x] 3 Fachwissen & Demo-Daten
-- [ ] 4 Kundenverwaltung
+- [x] 4 Kundenverwaltung
 - [ ] 5 Bedarfs-Engine & Gesprächsaufhänger
 - [ ] 6 Wiedervorlagen
 - [ ] 7 Gespräche & Gesprächsvorbereitung
@@ -166,4 +166,14 @@ Touch-first (iPad), wie Synapse:
   - Demo-Daten (src/data/demo, nur im Entwickler-Chunk geladen): 12 Kunden aus 01_Kunden/08_Gespraeche; K-0001 bekommt einen anderen erfundenen Vornamen (**Leon**). Erfundene Geburtsdaten (Geburtstage in den nächsten 7 Tagen: Ilka, Ben, Emma), einige Nachnamen, Telefon +49 000 …, E-Mail @example.com. Referenzdatum 2026-10-01: alle Daten werden um die Tage bis heute verschoben (Monate „JJJJ-MM“ und „MM/JJJJ“ im Text ab dem 15. gerechnet), nur-Jahrgang um Kalenderjahre (Finn bleibt minderjährig); Zeitstempel nie in der Zukunft. Verlauf: „angelegt“ mit dem Anfangszustand (spätere Änderungen per `applyFieldChanges` zurückgerechnet) + Änderungen. Wiedervorlagen für Ausbildungsende und 18. Geburtstag werden wie die Regeln aus Schritt 6 abgeleitet.
   - Import idempotent über stabile IDs (`deterministicUuid`, FNV-1a); nur fehlende Kunden bekommen neue Nummern (`reserveCustomerSequences`). Nummern bleiben nach dem Entfernen verbraucht → vor echtem Einsatz Datenbank zurücksetzen. „Demo-Daten entfernen“ löscht alle `demo`-Kunden außer synthetischen (also auch Testkunden aus „Verschlüsselung testen“), `removeMany` in einer Transaktion.
   - Synthetische Daten: 500 Kunden (Tag „Synthetisch“, mulberry32, deterministisch) in Batches à 50 Kunden pro Transaktion; `commit` schreibt per `bulkPut` je Tabelle. Im Cloud-Chromium dauert das Anlegen von 500 Kunden nur wenige Sekunden. „Entschlüsseln messen“ zeigt die Dauer wie beim Entsperren.
+- Schritt 4 (Kundenverwaltung):
+  - Kernlogik in src/core/customers: Alter/Minderjährigkeit (`ageInfo`: nur Jahrgang → `maybe`, wenn der 18. in dieses Jahr fällt; wird wie minderjährig behandelt), Geburtstag (29.02. → 28.02. in Nicht-Schaltjahren; das Alter steigt rechtlich erst am 01.03.), Telefon (`normalizePhone`: 0… → +49, 00… → +, „(0)“ entfernt; Gruppierung bleibt; WhatsApp nur mit internationaler Nummer), Suche/Filter/Sortierung, Einwilligungsprüfung (Werbung bei (evtl.) Minderjährigen nur mit Zustimmung der Eltern), Fragenkatalog-Logik.
+  - Fragenkatalog als Daten: jede Frage hat `key`, `fields` (Kundenpfade, Freitext als `answers.<key>`) und optional `onlyFor` (Lebensphasen; bei unbekannter Phase wird gefragt). Unbeantwortete Fragen werden zu offenen Punkten „Bereich: Frage“; `customersRepo.update` entfernt solche Punkte automatisch, sobald die Frage beantwortet ist oder nicht mehr gilt (eigene Punkte bleiben). Neue Kundenfelder: `answers`, `fixedCosts`, `disposableIncome`, `employerVl`, `employerBav`, `archived` (alle optional/mit Default, keine Migration nötig, weil verschlüsselte Payload).
+  - Dexie **Version 3**: Tabelle `drafts` (verschlüsselt wie alle Datentabellen, in DATA_TABLES → Laden, Sync, Passwortwechsel automatisch). Ein Entwurf „Neuer Kunde“ mit fester ID; gespeichert nach jeder Änderung (eine Schreibung zugleich, die letzte gewinnt); vor Anlegen/Verwerfen wird das Speichern gestoppt und abgewartet, sonst entsteht der Entwurf neu.
+  - UI: /customers (Liste, `content-visibility` für viele Zeilen), /customers/new (Fragenkatalog im Fokusmodus, 9 Bereiche + Zusammenfassung, „Weiter“ wird zu „Überspringen“, wenn im Bereich nichts beantwortet ist), /customers/:id (Akte). Bearbeiten abschnittsweise über `EditPanel` (ab 900 px `SidePanel` rechts, darunter BottomSheet); beide halten das fokussierte Feld über der Bildschirmtastatur. Feld-Editoren zentral in features/customers/fields (`CustomerField`), genutzt von Akte und Fragenkatalog. Neue UI-Bausteine: `SidePanel`, `ChoiceChip`.
+  - Verträge in der Akte per Tipp auf die Sparte änderbar (ActionMenu, Verlaufseintrag). Verlauf: neueste zuerst, aufklappbar, Listen (offene Punkte, Schlagwörter) nur als „− entfernt · + neu“.
+  - Archivieren ist der Standard (Liste blendet aus, Filter „Archiv anzeigen“); endgültiges Löschen mit Bestätigung, kaskadierend in einer Transaktion.
+  - Kürzel: `n` neuer Kunde (überall außer in Dialogen/Textfeldern), `/` Suche (Kunden, Wissen). Die Suchanfrage der Kundenliste wird beim Sperren gelöscht (kann Namen enthalten).
+  - Wissen: Die Platzhalter „Kunden mit …“ zeigen jetzt die passenden aktiven Kunden (Sparte: Status außer offen/nein/nicht relevant; Thema: abgeschlossene Sparten des Themas).
+  - „Nächste Wiedervorlage“ in der Liste ist bis Schritt 6 ein Platzhalter („–“).
 
