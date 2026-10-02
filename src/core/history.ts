@@ -72,3 +72,30 @@ export function diffRecords(
   );
   return changes;
 }
+
+function setPath(target: Record<string, unknown>, path: string, value: unknown): void {
+  const parts = path.split('.');
+  let node = target;
+  for (const part of parts.slice(0, -1)) {
+    const next = node[part];
+    if (!isPlainObject(next)) node[part] = {};
+    node = node[part] as Record<string, unknown>;
+  }
+  const last = parts.at(-1) ?? path;
+  if (value === undefined) delete node[last];
+  else node[last] = value;
+}
+
+/**
+ * Applies changes to a copy of a record: `side: 'to'` replays them, `side: 'from'` undoes
+ * them (gives the state before the changes).
+ */
+export function applyFieldChanges<T extends object>(
+  record: T,
+  changes: readonly FieldChange[],
+  side: 'from' | 'to',
+): T {
+  const copy = structuredClone(record) as Record<string, unknown>;
+  for (const change of changes) setPath(copy, change.path, change[side]);
+  return copy as T;
+}

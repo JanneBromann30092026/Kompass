@@ -79,17 +79,25 @@ export async function commit(writes: PendingWrite[], deletes: PendingDelete[] = 
   const rows = await Promise.all(
     writes.map(async ({ table, record }) => ({ table, row: await encryptRow(table, record, key) })),
   );
-  const tables = [...new Set([...writes.map((w) => w.table), ...deletes.map((d) => d.table)])];
+  const byTable = new Map<DataTable, { rows: EncryptedRow[]; records: DataRecords[DataTable][] }>();
+  rows.forEach(({ table, row }, index) => {
+    const group = byTable.get(table) ?? { rows: [], records: [] };
+    group.rows.push(row);
+    group.records.push(writes[index]!.record);
+    byTable.set(table, group);
+  });
+  const tables = [...new Set([...byTable.keys(), ...deletes.map((d) => d.table)])];
+  if (tables.length === 0) return;
   await db.transaction(
     'rw',
     tables.map((table) => db.table(table)),
     async () => {
       for (const { table, ids } of deletes) await db.table(table).bulkDelete(ids);
-      for (const { table, row } of rows) await db.table(table).put(row);
+      for (const [table, group] of byTable) await db.table(table).bulkPut(group.rows);
     },
   );
   for (const { table, ids } of deletes) dataStore.remove(table, ids);
-  for (const { table, record } of writes) dataStore.upsert(table, [record]);
+  for (const [table, group] of byTable) dataStore.upsert(table, group.records);
 }
 
 /** Decrypts every data table into the store (after unlocking). */

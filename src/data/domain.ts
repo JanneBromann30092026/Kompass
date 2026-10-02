@@ -1,6 +1,6 @@
 /**
- * Keys of the domain model (CLAUDE.md "Fachmodell"). Labels for the UI and the rules
- * follow with the domain knowledge in step 3.
+ * Keys of the domain model (CLAUDE.md "Fachmodell"). Names, descriptions and rules live in
+ * src/data/reference.
  */
 
 /** Product lines in priority order: 1 existential (BU, liability, car), 2 important, 3 optional. */
@@ -57,6 +57,14 @@ export const LIFE_EVENT_KINDS = [
   'annualReview',
 ] as const;
 export type LifeEventKind = (typeof LIFE_EVENT_KINDS)[number];
+
+export const TOPICS = [
+  'incomeProtection',
+  'liabilityAndProperty',
+  'wealthBuilding',
+  'retirementProvision',
+] as const;
+export type Topic = (typeof TOPICS)[number];
 
 export const HOUSING = ['parents', 'sharedFlat', 'rent', 'owned'] as const;
 export type Housing = (typeof HOUSING)[number];

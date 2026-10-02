@@ -66,15 +66,22 @@ export const customersRepo = {
    */
   async remove(id: string): Promise<void> {
     requireRecord('customers', id);
+    await customersRepo.removeMany([id]);
+  },
+
+  /** Deletes several customers with everything that belongs to them in one transaction. */
+  async removeMany(ids: readonly string[]): Promise<void> {
+    if (ids.length === 0) return;
+    const doomed = new Set(ids);
     const state = useDataStore.getState();
     const owned = (table: LinkedTable | 'history') =>
       Object.values<{ id: string; customerId: string }>(state[table])
-        .filter((item) => item.customerId === id)
+        .filter((item) => doomed.has(item.customerId))
         .map((item) => item.id);
     await commit(
       [],
       [
-        { table: 'customers', ids: [id] },
+        { table: 'customers', ids: [...doomed] },
         ...LINKED.map((table) => ({ table, ids: owned(table) })),
         { table: 'history', ids: owned('history') },
       ],
